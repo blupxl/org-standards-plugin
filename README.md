@@ -77,19 +77,35 @@ lists the companies). Within a company, `product` layers over the general standa
 are rejected with the valid ones listed; unknown values come back with suggestions. If an owner's
 server is down, the answer is marked `partial` and names it, instead of failing or guessing.
 
+## Set it up with Claude
+
+Clone the repository, open Claude Code in its root folder, and run:
+
+```
+/setup
+```
+
+Claude checks the requirements below, builds, runs the tests, starts the services, and connects the
+plugin, reporting as it goes. It asks before installing anything or changing Claude Code settings.
+The steps it follows are in [`.claude/skills/setup/SKILL.md`](.claude/skills/setup/SKILL.md), a
+project skill that comes with the repository. The first time, Claude Code asks you to trust the
+folder, which is what makes `/setup` available.
+
+To do it by hand instead, follow the sections below.
+
 ## Requirements
 
 Everything runs on your machine. You need three things, plus Claude Code to use the plugin:
 
 | Need | Get it | Check it |
 |---|---|---|
-| **.NET 10 SDK** (10.0.401 or later 10.x; pinned in `src/global.json`) | [dotnet.microsoft.com/download/dotnet/10.0](https://dotnet.microsoft.com/download/dotnet/10.0) | `dotnet --list-sdks` lists a `10.0.x` |
+| **.NET SDK 10 or later** (the minimum is set in `global.json`; newer SDKs, previews included, are used when installed) | [dotnet.microsoft.com/download/dotnet/10.0](https://dotnet.microsoft.com/download/dotnet/10.0) | `dotnet --list-sdks` lists `10.x` or newer |
 | **A container runtime** (runs one Postgres container) | See [Container runtime](#container-runtime) below | See below |
 | **Claude Code** | [code.claude.com/docs/en/setup](https://code.claude.com/docs/en/setup) | `claude --version` |
 | Aspire CLI *(optional, only for `aspire run`)* | [aspire.dev/get-started/install-cli](https://aspire.dev/get-started/install-cli/) | `aspire --version` |
 
-Tested on Windows 11 with Rancher Desktop (Docker engine 27.3.1). macOS and Linux should work, but
-haven't been tried.
+Tested on Windows 11 with Rancher Desktop (Docker engine 27.3.1), with .NET SDKs 10.0.204, 10.0.401
+and 11 preview. macOS and Linux should work, but haven't been tried.
 
 ### Container runtime
 
