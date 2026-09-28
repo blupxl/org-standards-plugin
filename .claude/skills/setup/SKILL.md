@@ -64,16 +64,25 @@ user:
 
 ## 4. Connect Claude Code
 
-A running Claude Code session can't load a plugin by folder, so offer both options and let the user
-choose:
+A running Claude Code session can't load a plugin by folder, so offer these options and let the
+user choose:
 
 - **Try it, nothing installed (recommended):** in a new terminal at the repository root, start
   `claude --plugin-dir ./plugins/my-company`. The plugin loads for that session only, named
   `my-company`.
-- **Install it under the company name `acme`:** this changes Claude Code settings, so ask first. Then
-  run `claude plugin marketplace add .` and `claude plugin install acme@acme-standards --scope local`,
-  and tell the user to run `/reload-plugins`. Undo with
-  `claude plugin marketplace remove acme-standards`.
+- **Install it as `acme`:** this changes Claude Code settings, so ask first. Run
+  `claude plugin marketplace add ./` (the `./` is required; a bare `.` is rejected), and only if that
+  succeeds, `claude plugin install acme@acme-standards --scope local`. Then tell the user to run
+  `/reload-plugins`. Undo with `claude plugin marketplace remove acme-standards`.
+- **Install it under the user's own company name:** the plugin has no name of its own; the
+  marketplace entry names it. In `.claude-plugin/marketplace.json`, change the marketplace `name`
+  (for example to `<name>-standards`) and the plugin entry's `name` (to `<name>`), then install as
+  above with `<name>@<name>-standards`. Tell the user this edits a tracked file, so they shouldn't
+  commit it, and that the standards themselves are still Acme's: the `company` tags in the
+  standards are data, not the plugin's name.
+
+If a marketplace with the same name is already registered (for example from another copy of this
+repository), report it and ask before removing it.
 
 ## 5. Report
 

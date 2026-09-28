@@ -267,7 +267,7 @@ To use the plugin as `acme` without a project opting in, register this repositor
 marketplace and install from it. From the repository root:
 
 ```bash
-claude plugin marketplace add .
+claude plugin marketplace add ./
 claude plugin install acme@acme-standards --scope local
 ```
 
