@@ -8,7 +8,7 @@ task in front of them: the product's timeout rules, the brand's colors, the webs
 accessibility basics. Those rules live with different teams and differ by product, so they tend to
 be caught late in review, and the work goes around again.
 
-This proof of concept brings those standards into Claude Code at the moment the work happens, and
+This plugin brings those standards into Claude Code at the moment the work happens, and
 has an independent agent check the result before anyone reviews it. A developer gets:
 
 - **the standards for this task, and only those,** with product-specific rules already applied;
@@ -33,10 +33,11 @@ Who this helps, and how: [use-cases.md](use-cases.md).
 
 The reasoning behind each decision is in [design-notes.md](design-notes.md).
 
-> **Status: proof of concept.** Built in a short working session to explore the design, not
-> production code. It runs end to end on placeholder standards, with unit and integration tests,
-> but it has no authentication and filters in memory. What a production version would need is
-> listed in [design-notes.md](design-notes.md#what-a-production-version-would-need).
+> **Status: usable, not yet production-hardened.** What started as a proof of concept now works
+> end to end: clone it, run `/setup`, and it builds, passes its unit and integration tests, starts the
+> services and connects Claude Code. It ships with example standards that show the format. It has no
+> authentication and filters in memory; what a production deployment would need is listed in
+> [design-notes.md](design-notes.md#what-a-production-version-would-need).
 
 ## How it works
 
@@ -365,7 +366,7 @@ fanning out to it. No change to the gateway, the skill, or the agent.
 
 ## Limits
 
-This is a proof of concept. The main limits:
+It's usable, but not hardened for production. The main limits:
 
 - Tests cover the gateway's rules and the running chain, but not whether Claude uses the skill well;
   that was checked by hand in real sessions.

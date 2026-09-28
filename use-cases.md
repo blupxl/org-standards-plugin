@@ -116,5 +116,5 @@ it's built, see [design-notes.md](design-notes.md).
 - **It doesn't replace human review.** It takes the rule-checking out of it.
 - **It doesn't block a build.** The check runs when the work is done, not as a gate in the pipeline.
   That would be a natural next step.
-- **It's a proof of concept.** The standards in it are placeholders that show the format. A real
+- **It ships with example standards.** They show the format and drive the demos. A real
   deployment starts from a company's actual standards.

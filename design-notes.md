@@ -3,9 +3,10 @@
 Why the plugin is built the way it is: the decisions, the alternatives that were rejected, and what
 went wrong while building it. For setup and usage, see [README.md](README.md).
 
-**Status: proof of concept.** It was built in a short working session to test whether the idea holds
-up, not to production quality. The design is deliberate; the implementation is the simplest thing
-that demonstrates it. The last section lists what a production version would need.
+**Status: usable, not yet production-hardened.** It began as a proof of concept to test whether the
+idea holds up, and was taken to the point where anyone can clone it, run `/setup`, and use it end to
+end, with tests. The design is deliberate; the implementation is kept as simple as the design
+allows. The last section lists what a production deployment would need.
 
 ## The problem
 
@@ -208,7 +209,7 @@ from the ticket and said so. A website repository should declare it, so nothing 
 
 **The standards model**
 
-- **Filtering and ownership are a larger design problem than this proof of concept tackles.** For
+- **Filtering and ownership are a larger design problem than this project tackles.** For
   example, finding and routing *missing* standards (an area with no topic under a scope) would need
   a precise definition of which areas are "in scope", a registry of areas with owners, and per-topic
   tags.
