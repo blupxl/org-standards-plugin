@@ -1,7 +1,44 @@
 # org-standards-plugin
 
-A Claude Code plugin that gives developers their company's standards at the point of work:
-the rules for *this* product and *this* kind of component, pulled from the teams that own them.
+**Work that meets your company's standards the first time, so reviews can focus on the business
+logic.**
+
+Developers, and the AI assistants working with them, rarely know every standard that applies to the
+task in front of them: the product's timeout rules, the brand's colors, the website's footer, the
+accessibility basics. Those rules live with different teams and differ by product, so they tend to
+be caught late in review, and the work goes around again.
+
+This proof of concept brings those standards into Claude Code at the moment the work happens, and
+has an independent agent check the result before anyone reviews it. A developer gets:
+
+- **the standards for this task, and only those,** with product-specific rules already applied;
+- **a check of the finished work** against each required rule, citing file and line;
+- **a clear statement of what the standards don't cover,** instead of a confident guess.
+
+Who this helps, and how: [use-cases.md](use-cases.md).
+
+## What this demonstrates
+
+- **A deterministic core with the model around it.** Filtering, precedence and validation are code;
+  Claude interprets the result.
+- **Verification separate from generation.** A read-only reviewer agent checks the work, so the
+  author doesn't grade its own output.
+- **Context kept small.** About 250 tokens per session until the skill is used; details are fetched
+  only when a task needs them.
+- **The repository, not the prompt, decides.** A project declares which standards apply, so an
+  ordinary request is enough.
+- **Built, tested and corrected.** 42 unit and integration tests, and the failures found along the
+  way, with how each was fixed.
+- **Fully local.** One clone, one command (`/setup`), nothing hosted.
+
+The reasoning behind each decision is in [design-notes.md](design-notes.md).
+
+> **Status: proof of concept.** Built in a short working session to explore the design, not
+> production code. It runs end to end on placeholder standards, with unit and integration tests,
+> but it has no authentication and filters in memory. What a production version would need is
+> listed in [design-notes.md](design-notes.md#what-a-production-version-would-need).
+
+## How it works
 
 - **A skill** (`/acme:standards`) that brings the right standards into the conversation.
 - **A reviewer agent** that checks finished work against the same standards, in its own context.
@@ -10,15 +47,9 @@ the rules for *this* product and *this* kind of component, pulled from the teams
   one is adding a file. The skill never changes.
 
 "Acme" is a stand-in. The plugin is generic (`plugins/my-company`), and a company's marketplace
-entry gives it its name. Why it's built this way, decision by decision:
-[design-notes.md](design-notes.md).
+entry gives it its name.
 
-> **Status: proof of concept.** Built in a short working session to explore the design, not
-> production code. It runs end to end on placeholder standards, with unit and integration tests,
-> but it has no authentication and filters in memory. What a production version would need is
-> listed in [design-notes.md](design-notes.md#what-a-production-version-would-need).
-
-## How it fits together
+### How it fits together
 
 ```
 Claude Code
