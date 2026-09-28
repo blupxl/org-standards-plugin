@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started · Acme standards</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --text: #1d1d1f; --muted: #5f6368;
+    --border: #e2e2dd; --accent: #1f4fd8; --accent-soft: #e8eefc;
+    --code-bg: #f0f0ec; --ok: #1e7d32; --warn: #a15c00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141416; --surface: #1c1c1f; --text: #ececee; --muted: #a0a0a8;
+      --border: #2e2e33; --accent: #7ea2ff; --accent-soft: #1e2a4a;
+      --code-bg: #232327; --ok: #6fcf7a; --warn: #f0b35a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 820px; margin: 0 auto; padding: 48px 20px 80px; }
+  header p { color: var(--muted); font-size: 1.1rem; margin-top: 4px; }
+  h1 { font-size: 2rem; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 1.25rem; margin: 40px 0 12px; }
+  h3 { font-size: 1rem; margin: 20px 0 6px; }
+  a { color: var(--accent); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 20px; margin: 12px 0;
+  }
+  .status { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.95rem; }
+  .status span::before { content: "●"; color: var(--ok); margin-right: 6px; }
+  .note { border-left: 3px solid var(--warn); padding: 8px 14px; background: var(--surface); border-radius: 0 8px 8px 0; }
+  ol.steps { padding-left: 1.2rem; }
+  ol.steps > li { margin: 14px 0; }
+  code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  .cmd { position: relative; margin: 8px 0; }
+  .cmd pre {
+    margin: 0; padding: 12px 84px 12px 14px; background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 8px; overflow-x: auto; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9rem;
+  }
+  .cmd button {
+    position: absolute; top: 7px; right: 7px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 0.8rem; cursor: pointer;
+  }
+  .cmd button:hover { border-color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .prompt { background: var(--accent-soft); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
+  pre.doc { white-space: pre-wrap; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 0.85rem; overflow-x: auto; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <h1>Acme standards</h1>
+  <p>Company standards for Claude Code, delivered at the point of work. Everything here runs on your machine.</p>
+</header>
+
+<div class="card status" aria-label="What is running">
+  <span>Standards gateway (MCP) at <code>http://localhost:5480/mcp</code>. This page is its home page.</span>
+  <span>Owners: <strong>design</strong>, <strong>platform</strong></span>
+  <span>Database UI: <strong>pgweb</strong>, in the Aspire dashboard</span>
+  <span>Acme design system (stand-in): <a href="http://localhost:5500">localhost:5500</a>, the stylesheet the design standards require</span>
+</div>
+<p>
+  The <strong>Aspire dashboard</strong> shows every resource, its logs, traces of each call, and the pgweb link.
+  Its address, with a login token, is printed when the app starts: in Visual Studio's Output window, or in
+  the terminal for <code>dotnet run</code>.
+</p>
+
+<h2>Connect Claude Code</h2>
+<ol class="steps">
+  <li>
+    Keep this app running. You're already past this step if you can read this page.
+  </li>
+  <li>
+    From the repository root, start Claude Code with the plugin loaded:
+    <div class="cmd"><pre>claude --plugin-dir ./plugins/my-company</pre><button type="button">Copy</button></div>
+    This loads the plugin for that session only. Nothing is installed or saved.
+  </li>
+  <li>
+    Check the connection inside Claude Code with <code>/mcp</code>: the server
+    <code>plugin:my-company:standards</code> should be connected.
+  </li>
+</ol>
+<p class="note">
+  The plugin's skill (<code>/my-company:standards</code>) and reviewer agent are first drafts. The standards
+  tools work on their own too, so you can also ask Claude for standards directly, as below.
+</p>
+
+<h2>Things to ask Claude</h2>
+<div class="prompt">What standards are available? Use the standards tools.</div>
+<div class="prompt">I'm building a web API for xyz-public-app. Which standards apply for branding, resilience and performance?</div>
+<div class="prompt">I'm writing UI code for xyz-public-app. Which colors should I use, exactly?</div>
+<div class="prompt">Show me the caching example for xyz-public-app.</div>
+<p>
+  The third prompt should make Claude call <code>get_topic("Colors")</code>: the main answer says the color
+  tokens are available and how to fetch them. The fourth returns an example the product inherits from the
+  general caching standard.
+</p>
+
+<h2>The tools</h2>
+<table>
+  <tr><th>Tool</th><th>Returns</th></tr>
+  <tr><td><code>list_standards</code></td><td>Which fields (product, technology, area, …) and values exist. Used to build a filter.</td></tr>
+  <tr><td><code>get_standards</code></td><td>The standards to follow, as one Markdown document per request. Several requests in one call.</td></tr>
+  <tr><td><code>get_topic</code></td><td>One topic in full: examples, code, reference tables such as color tokens.</td></tr>
+</table>
+<p>
+  Filters are JSON: field → values, OR within a field, AND across fields. <code>product</code> is special:
+  general topics come back as the base, and a product topic with the same name replaces the general one.
+</p>
+
+<h3>What Claude receives</h3>
+<pre class="doc"># Standards
+&gt; **Scope:** product = xyz-public-app · technology = web-api
+&gt; **Status:** complete
+&gt; **Sources:** design ✓, platform ✓
+&gt; **Precedence:** already resolved. A product-specific topic replaces the general topic with the same name, and says so.
+&gt; **Keywords:** MUST / MUST NOT = required · SHOULD = strong default · anything else is guidance.
+
+## Colors
+*design · XYZ Public App UI v1.0 · product: xyz-public-app · replaces the general topic (design v2.0)*
+
+- MUST use the XYZ color tokens (`--xyz-primary`, `--xyz-surface`, `--xyz-danger`), not the Acme ones.
+- MUST NOT use literal hex or rgb values.
+
+Why: XYZ Public App is co-branded and has its own palette.
+
+*More in this topic: Tokens. Fetch with `get_topic("Colors")` and the same filter.*</pre>
+<p>
+  The header tells Claude how far to trust the document. If an owner is down, the status is
+  <code>partial</code>; if a product name doesn't match, it's <code>unresolved</code> with a suggestion;
+  an unknown field makes it <code>invalid</code>. Nothing is guessed.
+</p>
+
+<h2>Change the standards</h2>
+<p>
+  Standards are Markdown files, one folder per owner:
+  <code>src/OrgStandards.Migrations/seed/&lt;owner&gt;/*.md</code>. Edit a file and restart the app;
+  the files are the source of truth, and the database is reloaded from them on every start.
+</p>
+<div class="card">
+<pre class="doc" style="margin:0">---
+title: Web UI
+version: 2.0
+technology: [web-api, ui]      # every other key is a tag
+area: [branding]
+---
+## Colors                      ← a topic
+- MUST use the Acme color tokens.
+
+Why: one line on the reason.
+
+### Tokens                     ← a detail, fetched on demand with get_topic
+| Token | Value |</pre>
+</div>
+<p>
+  To add an owner, add its name to <code>sources</code> in <code>src/OrgStandards.AppHost/Program.cs</code>
+  and create its folder under <code>seed/</code>. It gets a database, a server, and a pgweb bookmark;
+  nothing else changes.
+</p>
+
+<h2>If something's wrong</h2>
+<table>
+  <tr><th>Symptom</th><th>Try</th></tr>
+  <tr><td>A resource stuck in <em>Starting</em></td><td>The container runtime (Docker, Podman, or Rancher Desktop with dockerd) isn't running.</td></tr>
+  <tr><td>The owners never start</td><td>Open the <em>migrations</em> logs in the dashboard. Usually bad YAML at the top of a standards file.</td></tr>
+  <tr><td><code>/mcp</code> shows the server failing</td><td>This app isn't running, or something else is using port 5480.</td></tr>
+</table>
+
+<footer>
+  More: <code>README.md</code> for setup and details, <code>design-notes.md</code>
+  for why it's built this way.
+</footer>
+
+</main>
+<script>
+  document.querySelectorAll(".cmd button").forEach(button => {
+    button.addEventListener("click", async () => {
+      const text = button.previousElementSibling.textContent;
+      try { await navigator.clipboard.writeText(text); button.textContent = "Copied"; }
+      catch { button.textContent = "Select and copy"; }
+      setTimeout(() => (button.textContent = "Copy"), 1500);
+    });
+  });
+</script>
+</body>
+</html>

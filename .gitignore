@@ -1,0 +1,22 @@
+# .NET build output
+bin/
+obj/
+.vs/
+TestResults/
+
+# Per-user IDE and editor settings
+*.user
+*.DotSettings.user
+.vscode/
+.idea/
+
+# Local Claude Code settings
+.claude/settings.local.json
+
+# Local design work, not published
+docs/
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acme design system</title>
+<link rel="stylesheet" href="/css/acme.css">
+<style>
+  /* Layout only; every color comes from the Acme tokens. */
+  main { max-width: 860px; margin: 0 auto; padding: 40px 20px 64px; }
+  section { margin-top: 32px; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .swatch { display: flex; flex-direction: column; gap: 8px; }
+  .chip { height: 56px; border-radius: var(--acme-radius); border: 1px solid var(--acme-border); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.9em; }
+  .muted { color: var(--acme-muted); }
+  .xyz { margin-top: 12px; }
+</style>
+</head>
+<body class="acme-page">
+<main>
+  <h1>Acme design system</h1>
+  <p class="muted">
+    A stand-in for Acme's design-system site. The design team owns it; the design standards point
+    here, and the standards server tells Claude its address.
+  </p>
+
+  <section>
+    <h2>Use it</h2>
+    <div class="acme-card">
+      <p>Load the stylesheet, put <code>acme-page</code> on <code>&lt;body&gt;</code>, and use the component classes.</p>
+      <pre><code>&lt;link rel="stylesheet" href="http://localhost:5500/css/acme.css"&gt;
+&lt;!-- XYZ Public App: add the XYZ palette after it --&gt;
+&lt;link rel="stylesheet" href="http://localhost:5500/css/xyz.css"&gt;
+&lt;!-- The public website: add the website theme (crimson, greys, white) instead --&gt;
+&lt;link rel="stylesheet" href="http://localhost:5500/css/website.css"&gt;</code></pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Color tokens</h2>
+    <div class="swatches">
+      <div class="swatch"><div class="chip" style="background: var(--acme-primary)"></div><code>--acme-primary</code><span class="muted">Primary actions, links</span></div>
+      <div class="swatch"><div class="chip" style="background: var(--acme-surface)"></div><code>--acme-surface</code><span class="muted">Page and card backgrounds</span></div>
+      <div class="swatch"><div class="chip" style="background: var(--acme-danger)"></div><code>--acme-danger</code><span class="muted">Errors, destructive actions</span></div>
+    </div>
+    <p class="muted xyz">XYZ Public App swaps in <code>--xyz-primary</code>, <code>--xyz-surface</code> and <code>--xyz-danger</code> through <code>xyz.css</code>; the components stay the same.</p>
+  </section>
+
+  <section>
+    <h2>Components</h2>
+    <form class="acme-card" onsubmit="return false">
+      <div class="acme-field">
+        <label for="site">Location</label>
+        <select id="site"><option>Atlanta, GA</option><option>Omaha, NE</option><option>Los Angeles, CA</option></select>
+        <span class="acme-hint"><code>acme-field</code> with an <code>acme-hint</code></span>
+      </div>
+      <div class="acme-field">
+        <label for="temp">Temperature</label>
+        <input id="temp" value="-500">
+        <span class="acme-error">Enter a temperature between -80 and 140.</span>
+      </div>
+      <div class="row">
+        <button class="acme-button" type="submit">Save</button>
+        <button class="acme-button acme-button--secondary" type="button">Cancel</button>
+      </div>
+    </form>
+    <div class="acme-alert acme-alert--error" style="margin-top: 12px">
+      <code>acme-alert--error</code>: something went wrong; here's what to do next.
+    </div>
+  </section>
+</main>
+</body>
+</html>

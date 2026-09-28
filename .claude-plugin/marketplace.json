@@ -1,0 +1,14 @@
+{
+  "name": "acme-standards",
+  "description": "Acme's company standards for Claude Code: one local plugin, served from this folder.",
+  "owner": {
+    "name": "Acme Platform Team"
+  },
+  "plugins": [
+    {
+      "name": "acme",
+      "source": "./plugins/my-company",
+      "description": "Acme's engineering and product standards, delivered at the point of work."
+    }
+  ]
+}

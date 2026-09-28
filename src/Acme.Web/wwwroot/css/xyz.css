@@ -1,0 +1,12 @@
+/* XYZ Public App palette (demo). Load after acme.css: it keeps Acme's components and swaps in
+   XYZ's colors, as the XYZ Colors standard requires. */
+
+:root {
+  --xyz-primary: #00897B;
+  --xyz-surface: #FAFAFA;
+  --xyz-danger: #D84315;
+
+  --brand-primary: var(--xyz-primary);
+  --brand-surface: var(--xyz-surface);
+  --brand-danger: var(--xyz-danger);
+}

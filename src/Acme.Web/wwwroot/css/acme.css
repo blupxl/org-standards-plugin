@@ -1,0 +1,91 @@
+/* Acme design system (demo). Served by Acme.Web (the design-system site) at /css/acme.css.
+   The standards in seed/design/ refer to these tokens and classes, so every rule there can be met
+   by a plain HTML page. Product stylesheets (e.g. xyz.css) load after this one and override the
+   --brand-* variables. */
+
+:root {
+  /* Color tokens: the values the Colors standard lists. */
+  --acme-primary: #1F4FD8;
+  --acme-surface: #FFFFFF;
+  --acme-danger: #C62828;
+
+  /* Supporting values. */
+  --acme-page: #F5F5F2;
+  --acme-text: #1D1D1F;
+  --acme-muted: #5F6368;
+  --acme-border: #D9D9D4;
+  --acme-radius: 8px;
+  --acme-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* What the components use. Product stylesheets point these at their own tokens. */
+  --brand-primary: var(--acme-primary);
+  --brand-surface: var(--acme-surface);
+  --brand-danger: var(--acme-danger);
+}
+
+/* Page */
+.acme-page {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--acme-page);
+  color: var(--acme-text);
+  font: 16px/1.5 var(--acme-font);
+}
+
+.acme-page h1, .acme-page h2 { line-height: 1.2; }
+
+/* Card: a surface for a group of content or a form. */
+.acme-card {
+  background: var(--brand-surface);
+  border: 1px solid var(--acme-border);
+  border-radius: var(--acme-radius);
+  padding: 20px 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Field: a label with its input, select or textarea, and optional hint or error. */
+.acme-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.acme-field > label { font-weight: 600; font-size: 0.9rem; }
+.acme-field > input,
+.acme-field > select,
+.acme-field > textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--brand-surface);
+  border: 1px solid var(--acme-border);
+  border-radius: var(--acme-radius);
+  padding: 8px 10px;
+}
+.acme-field > input:focus,
+.acme-field > select:focus,
+.acme-field > textarea:focus {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 1px;
+  border-color: var(--brand-primary);
+}
+.acme-field > .acme-hint { color: var(--acme-muted); font-size: 0.85rem; }
+.acme-field > .acme-error { color: var(--brand-danger); font-size: 0.85rem; }
+
+/* Button: primary by default; add acme-button--secondary for a quieter action. */
+.acme-button {
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--brand-primary);
+  border-radius: var(--acme-radius);
+  padding: 8px 16px;
+  background: var(--brand-primary);
+  color: #FFFFFF;
+}
+.acme-button:hover { filter: brightness(1.08); }
+.acme-button:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+.acme-button--secondary { background: transparent; color: var(--brand-primary); }
+
+/* Alert: a message about the page's state. */
+.acme-alert {
+  border-radius: var(--acme-radius);
+  padding: 10px 14px;
+  border: 1px solid var(--acme-border);
+  background: var(--brand-surface);
+}
+.acme-alert--error { border-color: var(--brand-danger); color: var(--brand-danger); }

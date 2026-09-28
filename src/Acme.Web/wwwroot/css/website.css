@@ -1,0 +1,107 @@
+/* Acme public website theme (demo). Load after acme.css. It keeps the Acme components, applies
+   the website palette (crimson, greys, white) and typography, and adds the page-structure classes
+   the "Acme public website" standards require. Fonts are named first but never downloaded:
+   without them installed, the system fonts are used. */
+
+:root {
+  --site-primary: #A2224B;
+  --site-ink: #1F1F1F;
+  --site-grey: #636B75;
+  --site-silver: #A1A0A1;
+  --site-mist: #DCE3EB;
+  --site-surface: #FFFFFF;
+  --site-canvas: #F6F6F5;
+
+  --site-font-heading: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --site-font-body: "Nunito Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Point the Acme components and page at the website palette. */
+  --brand-primary: var(--site-primary);
+  --brand-surface: var(--site-surface);
+  --acme-page: var(--site-canvas);
+  --acme-text: var(--site-ink);
+  --acme-muted: var(--site-grey);
+  --acme-font: var(--site-font-body);
+}
+
+.acme-page h1, .acme-page h2, .acme-page h3 {
+  font-family: var(--site-font-heading);
+  letter-spacing: 0.01em;
+}
+
+/* Skip link: the first focusable element; visible only when focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 12px;
+  z-index: 10;
+  background: var(--site-surface);
+  color: var(--site-primary);
+  padding: 8px 14px;
+  border: 2px solid var(--site-primary);
+  border-radius: var(--acme-radius);
+  font-weight: 700;
+}
+.skip-link:focus { left: 12px; }
+
+/* Header: logo and primary navigation. */
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 16px 24px;
+  background: var(--site-surface);
+  border-bottom: 4px solid var(--site-primary);
+}
+.site-logo {
+  font-family: var(--site-font-heading);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--site-primary);
+  text-decoration: none;
+}
+.site-nav ul { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0; padding: 0; list-style: none; }
+.site-nav a {
+  color: var(--site-ink);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+}
+.site-nav a:hover,
+.site-nav a[aria-current="page"] { color: var(--site-primary); border-bottom-color: var(--site-primary); }
+.site-nav a:focus-visible { outline: 2px solid var(--site-primary); outline-offset: 3px; }
+
+/* Hero: the page's one <h1>, a short lead, and a call to action. */
+.site-hero {
+  background: var(--site-primary);
+  color: var(--site-surface);
+  padding: 64px 24px;
+}
+.site-hero > * { max-width: 960px; margin-left: auto; margin-right: auto; }
+.site-hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin-top: 0; margin-bottom: 12px; }
+.site-hero p { font-size: 1.15rem; max-width: 640px; margin-left: 0; }
+
+/* Sections and grids. */
+.site-section { padding: 48px 24px; }
+.site-section > * { max-width: 960px; margin-left: auto; margin-right: auto; }
+.site-section--mist { background: var(--site-mist); }
+.site-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+/* A button variant for dark or colored backgrounds, such as the hero. */
+.acme-button--inverse { background: var(--site-surface); color: var(--site-primary); border-color: var(--site-surface); }
+
+/* Footer: legal line, required links, social links. */
+.site-footer {
+  background: var(--site-ink);
+  color: var(--site-mist);
+  padding: 32px 24px;
+}
+.site-footer > * { max-width: 960px; margin-left: auto; margin-right: auto; }
+.site-footer a { color: var(--site-surface); }
+.site-footer a:focus-visible { outline: 2px solid var(--site-surface); outline-offset: 2px; }
+.site-footer ul { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 0; list-style: none; }

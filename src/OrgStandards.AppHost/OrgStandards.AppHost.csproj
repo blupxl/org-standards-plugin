@@ -1,0 +1,24 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.5.4">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Orchestrator from NuGet, so F5 / dotnet run work without the Aspire CLI installed. -->
+    <AspireUseCliBundle>false</AspireUseCliBundle>
+    <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OrgStandards.Gateway\OrgStandards.Gateway.csproj" />
+    <ProjectReference Include="..\OrgStandards.Migrations\OrgStandards.Migrations.csproj" />
+    <ProjectReference Include="..\OrgStandards.Source\OrgStandards.Source.csproj" />
+    <ProjectReference Include="..\Acme.Web\Acme.Web.csproj" />
+  </ItemGroup>
+
+</Project>
