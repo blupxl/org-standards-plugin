@@ -17,8 +17,8 @@ var links = new Dictionary<string, (string Name, IResourceBuilder<ProjectResourc
 };
 
 // The downstream MCP servers that own the standards: the fan-out chain.
-// To add one, add its name here and a seed file at OrgStandards.Migrations/seed/<name>.json.
-string[] sources = ["design", "platform"];
+// To add one, add its name here and a folder of standards at OrgStandards.Migrations/seed/<name>/.
+string[] sources = ["design", "platform", "security"];
 
 var migrations = builder.AddProject<Projects.OrgStandards_Migrations>("migrations")
     .WaitFor(postgres);

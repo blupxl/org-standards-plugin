@@ -9,9 +9,12 @@ namespace OrgStandards.Migrations;
 //   ---                         YAML frontmatter: title, version, and any other key is a tag
 //   title: Web UI               (a single value or a list). Every topic in the file gets the tags.
 //   version: 2.0
-//   technology: [web-api, ui]
+//   kind: [ui, css]
 //   ---
 //   ## Colors                   "##" starts a topic. The heading is the topic's name.
+//   <!-- tags: { kind: [css] } -->  Optional, right under the heading: narrows the document's tags
+//                               for this topic. Fields it names replace the document's; the rest
+//                               are inherited.
 //   - MUST use tokens ...       The text under it is the topic's body: rules, and a "Why:" line.
 //   ### Tokens                  "###" starts a detail (example, reference table), fetched on demand.
 //
@@ -19,6 +22,9 @@ namespace OrgStandards.Migrations;
 public static class StandardsMarkdown
 {
     private static readonly IDeserializer Yaml = new DeserializerBuilder().Build();
+
+    private const string TagsStart = "<!-- tags:";
+    private const string TagsEnd = "-->";
 
     public static List<Topic> Parse(string path)
     {
@@ -79,6 +85,11 @@ public static class StandardsMarkdown
                 };
                 topics.Add(topic);
             }
+            else if (!inFence && topic is not null && detail is null && buffer.All(string.IsNullOrWhiteSpace) &&
+                     trimmed.StartsWith(TagsStart, StringComparison.Ordinal) && trimmed.TrimEnd().EndsWith(TagsEnd, StringComparison.Ordinal))
+            {
+                Narrow(topic, trimmed.TrimEnd()[TagsStart.Length..^TagsEnd.Length]);
+            }
             else if (!inFence && topic is not null && line.StartsWith("### "))
             {
                 Flush();
@@ -92,6 +103,17 @@ public static class StandardsMarkdown
 
         Flush();
         return topics;
+    }
+
+    // Applies a topic's own tags: each field it names replaces the document's values for that field.
+    private static void Narrow(Topic topic, string yaml)
+    {
+        var own = Yaml.Deserialize<Dictionary<string, object>>(yaml) ?? new Dictionary<string, object>();
+        foreach (var (field, value) in own)
+        {
+            topic.Tags.RemoveAll(tag => tag.Field.Equals(field, StringComparison.OrdinalIgnoreCase));
+            topic.Tags.AddRange(Values(value).Select(item => new TopicTag { Field = field, Value = item }));
+        }
     }
 
     private static (Dictionary<string, object> Frontmatter, string Markdown) SplitFrontmatter(string text)

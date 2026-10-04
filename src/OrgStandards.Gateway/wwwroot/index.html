@@ -66,7 +66,7 @@
 
 <div class="card status" aria-label="What is running">
   <span>Standards gateway (MCP) at <code>http://localhost:5480/mcp</code>. This page is its home page.</span>
-  <span>Owners: <strong>design</strong>, <strong>platform</strong></span>
+  <span>Owners: <strong>design</strong>, <strong>platform</strong>, <strong>security</strong></span>
   <span>Database UI: <strong>pgweb</strong>, in the Aspire dashboard</span>
   <span>Acme design system (stand-in): <a href="http://localhost:5500">localhost:5500</a>, the stylesheet the design standards require</span>
 </div>
@@ -85,6 +85,8 @@
     From the repository root, start Claude Code with the plugin loaded:
     <div class="cmd"><pre>claude --plugin-dir ./plugins/my-company</pre><button type="button">Copy</button></div>
     This loads the plugin for that session only. Nothing is installed or saved.
+    To use it in your other projects, install it from this folder's local catalog instead
+    (<code>guide/install.md</code>). Either way, everything stays on this machine.
   </li>
   <li>
     Check the connection inside Claude Code with <code>/mcp</code>: the server
@@ -92,7 +94,7 @@
   </li>
 </ol>
 <p class="note">
-  The plugin's skill (<code>/my-company:standards</code>) and reviewer agent are first drafts. The standards
+  The plugin's skills (<code>/my-company:standards</code>, <code>/my-company:assess</code>) and reviewer agent are first drafts. The standards
   tools work on their own too, so you can also ask Claude for standards directly, as below.
 </p>
 
@@ -101,6 +103,7 @@
 <div class="prompt">I'm building a web API for xyz-public-app. Which standards apply for branding, resilience and performance?</div>
 <div class="prompt">I'm writing UI code for xyz-public-app. Which colors should I use, exactly?</div>
 <div class="prompt">Show me the caching example for xyz-public-app.</div>
+<div class="prompt">Assess this project against our standards and give me a report. <em>(In another repository: <code>/acme:assess</code>, or <code>/my-company:assess</code> with <code>--plugin-dir</code>.)</em></div>
 <p>
   The third prompt should make Claude call <code>get_topic("Colors")</code>: the main answer says the color
   tokens are available and how to fetch them. The fourth returns an example the product inherits from the
@@ -110,7 +113,7 @@
 <h2>The tools</h2>
 <table>
   <tr><th>Tool</th><th>Returns</th></tr>
-  <tr><td><code>list_standards</code></td><td>Which fields (product, technology, area, …) and values exist. Used to build a filter.</td></tr>
+  <tr><td><code>list_standards</code></td><td>Which fields (product, kind, concern, …) and values exist. Used to build a filter.</td></tr>
   <tr><td><code>get_standards</code></td><td>The standards to follow, as one Markdown document per request. Several requests in one call.</td></tr>
   <tr><td><code>get_topic</code></td><td>One topic in full: examples, code, reference tables such as color tokens.</td></tr>
 </table>
@@ -121,7 +124,7 @@
 
 <h3>What Claude receives</h3>
 <pre class="doc"># Standards
-&gt; **Scope:** product = xyz-public-app · technology = web-api
+&gt; **Scope:** product = xyz-public-app · kind = css, backend
 &gt; **Status:** complete
 &gt; **Sources:** design ✓, platform ✓
 &gt; **Precedence:** already resolved. A product-specific topic replaces the general topic with the same name, and says so.
@@ -152,8 +155,8 @@ Why: XYZ Public App is co-branded and has its own palette.
 <pre class="doc" style="margin:0">---
 title: Web UI
 version: 2.0
-technology: [web-api, ui]      # every other key is a tag
-area: [branding]
+kind: [ui, css, styling]        # what the code is
+concern: [branding]             # what it must achieve (optional); every other key is a tag too
 ---
 ## Colors                      ← a topic
 - MUST use the Acme color tokens.
@@ -178,7 +181,7 @@ Why: one line on the reason.
 </table>
 
 <footer>
-  More: <code>README.md</code> for setup and details, <code>design-notes.md</code>
+  More: <code>README.md</code> and the pages in <code>guide/</code> for setup and details, <code>design-notes.md</code>
   for why it's built this way.
 </footer>
 

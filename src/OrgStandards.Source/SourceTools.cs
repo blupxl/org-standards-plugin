@@ -31,8 +31,9 @@ public static class SourceTools
         Dictionary<string, string[]>? filter = null,
         CancellationToken cancellationToken = default)
     {
+        var cleaned = Filters.Clean(filter);
         var topics = await StandardMatcher.LoadAllAsync(db, cancellationToken);
-        var matching = topics.Where(topic => StandardMatcher.Matches(topic.Tags, filter, discovery: true));
+        var matching = topics.Where(topic => StandardMatcher.Matches(topic.Tags, cleaned, discovery: true));
 
         return new DescribeResult(new SourceCatalog(source.Name, StandardMatcher.FieldsOf(topics)), StandardMatcher.FieldsOf(matching));
     }
@@ -43,11 +44,13 @@ public static class SourceTools
         StandardsDbContext db,
         SourceInfo source,
         [Description("Filters: each is field -> accepted values. OR within a field, AND across fields.")]
-        Dictionary<string, string[]>[] filters,
+        Dictionary<string, string[]>?[]? filters,
         CancellationToken cancellationToken = default)
     {
+        // Callable directly, not only by the gateway: clean the input here too.
         var topics = await StandardMatcher.LoadAllAsync(db, cancellationToken);
-        var results = filters
+        var results = (filters ?? [])
+            .Select(filter => Filters.Clean(filter))
             .Select(filter => topics.Where(topic => StandardMatcher.Matches(topic.Tags, filter)).Select(source.Resolve).ToList())
             .ToArray();
 

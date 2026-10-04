@@ -15,16 +15,17 @@ internal static class TestData
         string version = "1.0",
         string body = "- MUST do the thing.",
         TopicDetail[]? details = null,
-        string company = "acme",
         string? product = null,
         string[]? technology = null,
         string[]? area = null,
+        string[]? implements = null,
         string document = "Test document")
     {
-        var tags = Map(("company", [company]));
+        var tags = Map();
         if (product is not null) tags["product"] = [product];
         if (technology is not null) tags["technology"] = technology;
         if (area is not null) tags["area"] = area;
+        if (implements is not null) tags["implements"] = implements;
 
         return new StandardTopic(name, document, version, body, details ?? [], tags);
     }

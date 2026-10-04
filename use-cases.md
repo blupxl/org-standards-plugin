@@ -73,7 +73,7 @@ it's built, see [design-notes.md](design-notes.md).
 
 - **Today:** the standards are tribal knowledge. New people learn them by getting them wrong in
   review.
-- **With the plugin:** the repository says which company, product and technology apply. A new
+- **With the plugin:** the repository says which product it is and what kind of work it holds. A new
   developer's first request is handled to the same standards as a veteran's.
 - **Benefit:** productive sooner, and consistent output across people and teams.
 

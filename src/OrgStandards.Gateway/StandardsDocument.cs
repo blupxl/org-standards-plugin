@@ -63,6 +63,13 @@ public static class StandardsDocument
             return document.ToString().TrimEnd();
         }
 
+        var excluded = resolution.Excluded.FirstOrDefault(e => e.Topic.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (matches.Count == 0 && excluded is not null)
+        {
+            document.AppendLine($"> **Excluded:** \"{excluded.Topic}\" is excluded by the project's scope ({excluded.Reason}). It isn't shown.");
+            return document.ToString().TrimEnd();
+        }
+
         if (matches.Count == 0)
         {
             var available = resolution.Topics.Select(topic => topic.Topic.Topic).Distinct(StringComparer.OrdinalIgnoreCase).Order();
@@ -101,10 +108,11 @@ public static class StandardsDocument
         document.AppendLine($"> **Status:** {Status(resolution)}");
         document.AppendLine($"> **Sources:** {string.Join(", ", resolution.Sources.Select(Source))}");
 
-        if (!Resolver.Requests(resolution.Filter, StandardFields.Partition))
+        if (resolution.Excluded.Length > 0)
         {
-            document.AppendLine($"> ⚠ Missing required field: {StandardFields.Partition}. Standards are kept per company; " +
-                                $"say which one: {string.Join(", ", resolution.ValidCompanies)}. Nothing is shown; add it and ask again.");
+            document.AppendLine($"> **Excluded by the project's scope:** " +
+                                $"{string.Join(", ", resolution.Excluded.Select(e => $"{e.Topic} ({e.Source}, {e.Reason})"))}. " +
+                                "These rules are not shown and not checked; they are not passes.");
         }
 
         if (resolution.UnknownFields.Length > 0)
@@ -140,21 +148,29 @@ public static class StandardsDocument
     {
         var layer = topic.Product is null ? "general" : $"product: {string.Join(", ", topic.Product)}";
         var replaces = topic.Replaces is null ? "" : $" · replaces the general topic ({topic.Replaces.Source} {Version(topic.Replaces.Version)})";
+        var implements = topic.Topic.Tags.FirstOrDefault(tag => tag.Key.Equals(StandardFields.Implements, StringComparison.OrdinalIgnoreCase)).Value
+            is { Length: > 0 } general
+            ? $" · implements: {string.Join(", ", general)}"
+            : "";
 
         document.AppendLine($"## {topic.Topic.Topic}");
-        document.AppendLine($"*{topic.Source} · {topic.Topic.Document} {Version(topic.Topic.Version)} · {layer}{replaces}*");
+        document.AppendLine($"*{topic.Source} · {topic.Topic.Document} {Version(topic.Topic.Version)} · {layer}{replaces}{implements}*");
         document.AppendLine();
         document.AppendLine(topic.Topic.Body);
     }
 
-    private static bool IsInvalid(Resolution resolution) =>
-        resolution.UnknownFields.Length > 0 || !Resolver.Requests(resolution.Filter, StandardFields.Partition);
+    private static bool IsInvalid(Resolution resolution) => resolution.UnknownFields.Length > 0;
 
     private static string Status(Resolution resolution)
     {
         if (IsInvalid(resolution))
         {
             return "invalid";
+        }
+
+        if (resolution.Sources.Length > 0 && resolution.Sources.All(source => source.Status != "ok"))
+        {
+            return "unavailable";
         }
 
         var words = new List<string>();

@@ -17,6 +17,16 @@
   --acme-radius: 8px;
   --acme-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
+  /* Spacing scale: the values the Layout standard requires for margins, padding and gaps. */
+  --acme-space-1: 0.25rem;  /* 4px */
+  --acme-space-2: 0.5rem;   /* 8px */
+  --acme-space-3: 0.75rem;  /* 12px */
+  --acme-space-4: 1rem;     /* 16px */
+  --acme-space-5: 1.5rem;   /* 24px */
+  --acme-space-6: 2rem;     /* 32px */
+  --acme-space-7: 3rem;     /* 48px */
+  --acme-space-8: 4rem;     /* 64px */
+
   /* What the components use. Product stylesheets point these at their own tokens. */
   --brand-primary: var(--acme-primary);
   --brand-surface: var(--acme-surface);

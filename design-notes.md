@@ -1,7 +1,7 @@
 # org-standards-plugin: design notes
 
 Why the plugin is built the way it is: the decisions, the alternatives that were rejected, and what
-went wrong while building it. For setup and usage, see [README.md](README.md).
+went wrong while building it. For setup and usage, see [README.md](README.md) and the pages in [guide/](guide/README.md).
 
 **Status: usable, not yet production-hardened.** It began as a proof of concept to test whether the
 idea holds up, and was taken to the point where anyone can clone it, run `/setup`, and use it end to
@@ -38,9 +38,18 @@ These came out of pushing back on earlier versions of the design.
   site (Acme.Web), not on the gateway. Standards point to it by name (`{{design-system}}`), and the
   owner's server resolves the address. *Rejected:* serving design assets from the gateway. It
   worked, but it put files on the front door that belonged to someone else.
-- **Classification isn't fixed.** Standards carry free-form tags (technology, area, product, …),
-  and a new tag is just new data. *Rejected:* a fixed product × technology grid, which couldn't
-  express combinations like "web API + branding".
+- **Classified by what the work is, not who wrote it.** Every standard carries categories from a
+  taxonomy (`seed/taxonomy.yaml`), as many as apply, in two facets: `kind`, what the code is (`api`,
+  `css`, `react`, …), and `concern`, what it must achieve (`security`, `performance`,
+  `accessibility`, …). Values within a field are alternatives and the two fields narrow each other,
+  so a request can say "security, for an API"; a batch of requests gives each component its own
+  concerns. Categories come from published sources where one exists (ISO/IEC 25010, OWASP ASVS, W3C
+  WCAG, W3C design tokens), and the taxonomy is expected to grow. Owners stay the authors, not a
+  category. *Rejected:* a single `categories` field (briefly): in the first end-to-end test, an API
+  question that included `security` also returned browser security rules, because one field can
+  only widen. Free-form `technology` and `area` tags (an earlier version), which followed the org
+  chart and had no defined vocabulary. A fixed product × technology grid, which couldn't express
+  combinations like "web API + branding".
 - **Code produces facts; the model interprets them.** Filtering, layering, validation and
   "did you mean" are deterministic code in the gateway. Claude reads the result.
 - **Every rule must be satisfiable.** A MUST that points at something developers can't get (a
@@ -76,8 +85,7 @@ and the output was designed before the storage.
 
 **Writing them:**
 
-- YAML frontmatter holds `title`, `version`, and tags. Every other key is a tag, and `company` is
-  required.
+- YAML frontmatter holds `title`, `version`, and tags. Every other key is a tag.
 - `## Heading` is a **topic**: the unit that filtering, layering and citations work on. Topics are
   named by subject ("Colors"), not by team.
 - Rules use **MUST / MUST NOT / SHOULD** (RFC 2119). Everything else is guidance.
@@ -108,16 +116,18 @@ the document is instructions, not data: it has to say how far it can be trusted.
 - A filter is JSON: field → accepted values. OR within a field, AND across fields. Unknown fields
   are rejected with the valid ones listed. Unknown values come back with "did you mean"
   suggestions, and nothing is substituted silently.
-- **`company` is a partition.** Every request must name one, and companies never mix. *Rejected:*
-  treating company as an ordinary tag, which would let one company's rules leak into another's
-  answers.
-- **`product` is an overlay within a company.** General topics are the base. A product topic with
+- **One deployment per company.** A company runs its own gateway and owners, and the plugin's
+  server address decides whose standards it gets. *Rejected:* a required `company` field on every
+  topic and request (an earlier version). The plugin only ever serves one company, so callers had
+  to repeat a value that could only be one thing, and getting it wrong was one more way to fail;
+  the deployment already keeps companies apart.
+- **`product` is an overlay.** General topics are the base. A product topic with
   the same name replaces the general one, and says what it replaced. Details are inherited by title,
   so a product that restates a rule keeps the general example unless it provides its own. Without
   a product filter, only general topics apply.
 - The same topic defined by two owners in the same layer is returned twice and flagged as a
   conflict, never silently picked.
-- `list_standards` is discovery. It shows every company, product and value, and its output becomes
+- `list_standards` is discovery. It shows every field, product and value, and its output becomes
   the next request's filter. Requests are batched: several scopes in one call.
 
 ## The plugin
@@ -134,11 +144,36 @@ the document is instructions, not data: it has to say how far it can be trusted.
   citing lines. SHOULDs are notes, never failures. It is read-only through a *deny* list (no Write,
   Edit, NotebookEdit, Bash or PowerShell). An allow list would have to name the MCP tools, whose
   names include the plugin's name, and that would break under a different marketplace name.
-- **Projects opt in** by committing `.claude/CLAUDE.md` (see `project-template/`). It says the
-  repository is company work and declares its scope. CLAUDE.md is always loaded, which is what makes
-  the standards apply to plain requests.
-- **Cost:** about 250 tokens in every session (the two descriptions). The skill (~1k tokens) and the
-  reviewer (~570) load only when used.
+- **Projects opt in** by committing `.claude/CLAUDE.md` and `.claude/standards.json` (see
+  `project-template/`). CLAUDE.md is always loaded, which is what makes the standards apply to plain
+  requests; it points to `standards.json`, which holds the scope and the **exclusions**: standards
+  the project may leave out, each with a reason, decided by the architects. Like allowed commands in
+  `settings.json`, Claude reads them and never adds its own. The gateway applies them and lists the
+  excluded topics in every answer, so an exclusion is never mistaken for a pass. *Rejected:*
+  letting Claude exclude rules on request, which would make compliance whatever the conversation
+  decided.
+- **Runtimes qualify, like products.** `runtime` (`dotnet`, `node`) is a third facet, but it
+  doesn't narrow like kind and concern: a standard without one applies to every runtime, and one
+  written for a runtime applies only when it's named. General rules are written runtime-neutral,
+  with the .NET or Node way as a detail. *Rejected:* tagging .NET rules with a `dotnet` kind, which
+  still matched any request for `backend`; found when an assessment of a Node server got .NET rules
+  and the reviewer had to judge them "by intent".
+- **Topics can narrow their document's tags** with a `<!-- tags: { … } -->` line under the
+  heading, so one document can hold topics for different concerns without tagging each with all of
+  them.
+- **Cost:** about 250 tokens in every session for the standards skill's and the reviewer's
+  descriptions (measured). The assess skill's description adds roughly 70 more (estimated, not yet
+  measured). The skills' instructions (~1k tokens each) and the reviewer (~570) load only when used.
+- **Assessing a whole project** is a second skill, `assess`, rather than a new mode of the reviewer.
+  It works out the scope (the declared one, or a proposed one the user confirms), splits the project
+  into components, runs the unchanged reviewer on each in parallel, and merges the findings into one
+  report that can become a task list. The reviewer stays a single-purpose checker of given files.
+  Each run is saved in its own dated folder in the project
+  (`docs/standards/assessments/<YYYY-MM-DD-HHmm>/`: `assessment.md` and `.json`), with a stable id
+  per finding, so each run compares itself with the last and every run stays side by side. A finding that disappears without a reviewer marking it **pass** is "not reported this
+  run", never "fixed": reviewers vary between runs, and only the data can tell variance from
+  progress. *Rejected:* keeping the report in the console only, which couldn't be compared; and
+  one report overwritten each run, which left the history to git.
 
 ## What went wrong while building it
 
@@ -155,7 +190,7 @@ the document is instructions, not data: it has to say how far it can be trusted.
 4. **The skill didn't trigger.** In the first real test (a mockup request that didn't mention
    standards), a built-in page-building skill matched the prompt better, and ours never ran. Skill
    descriptions compete, and the MCP tools' own descriptions weren't loaded yet. Fix: the
-   repository's CLAUDE.md declares the company and scope, and the skill's description was widened as
+   repository's CLAUDE.md declares that standards apply and their scope, and the skill's description was widened as
    a backstop. The same prompt then used the standards.
 5. **A rule nobody could follow.** A placeholder standard required a React component package that
    doesn't exist. Claude treated the MUST as binding and started building a React prototype to meet
@@ -166,6 +201,15 @@ the document is instructions, not data: it has to say how far it can be trusted.
 7. **IDE side effects.** Visual Studio injected a debugging add-in into services that run without a
    launch profile, which logged errors and ran them as Production. Fix: the AppHost sets the
    environment and disables hosting-startup add-ins for those services.
+8. **A null crashed the gateway.** A filter like `{"kind": ["api", null]}`, which JSON allows,
+   reached the "did you mean" code and threw. Nothing cleaned input at the boundary. Fix: every tool,
+   on the gateway and the owners, cleans its input first (nulls and blanks dropped, values trimmed).
+9. **An outage blamed the filter.** With every owner timed out, every field was reported as unknown
+   ("Valid fields: ."). Fix: fields are checked only against owners that answered, and a document
+   with none answering says `unavailable`. Found through an integration test that failed now and
+   then: the owners reported healthy before their first query (database connection, EF Core's
+   model) could finish within the gateway's 10-second limit. The test fixture now waits until every
+   owner answers.
 
 ## Demo runs
 
@@ -189,8 +233,12 @@ from the ticket and said so. A website repository should declare it, so nothing 
 
 **Quality**
 
-- **Broader tests.** Unit tests cover the gateway's rules (matching, partition, overlay, inherited
-  details, validation, the document header, the Markdown parser, link resolution), and four
+- **Retrieval is measured, not assumed.** A golden set of developer-worded tasks and an evaluation
+  harness score each retrieval strategy (recall, precision, classification), and each report
+  records the commit and the standards it measured. The tag-only baseline is recorded so search
+  can be judged against it.
+- **Broader tests.** Unit tests cover the gateway's rules (matching, overlay, inherited
+  details, validation, the document header, the Markdown parser, link resolution), and six
   integration tests run the whole chain through the AppHost. Missing: failure-path integration
   tests (an owner going down mid-request) and tests for the migration app's error handling.
 - **Trigger and behavior evaluation.** The skill was tested with a handful of prompts. A real

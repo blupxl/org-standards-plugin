@@ -1,0 +1,8 @@
+{
+  "$comment": "Set by the architects. scope: the filter Claude starts from. exclude: standards this project is allowed to leave out, each with its reason. Claude uses these as written and never adds exclusions of its own.",
+  "scope": {
+    "kind": ["ui", "css", "styling"],
+    "runtime": ["dotnet"]
+  },
+  "exclude": []
+}
