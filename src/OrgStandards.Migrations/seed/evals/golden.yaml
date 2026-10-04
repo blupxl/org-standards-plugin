@@ -172,6 +172,12 @@ tasks:
     categories: [observability, performance]
     expect: [Tracing]
 
+  # API documentation
+  - task: Let other teams explore and try the orders API in a browser
+    scope: { runtime: [dotnet] }
+    categories: [api, documentation]
+    expect: [API description, OpenAPI in .NET]
+
   # Runtimes: a runtime's own standards reach only projects on that runtime
   - task: Set up the test project for our .NET API
     scope: { runtime: [dotnet] }

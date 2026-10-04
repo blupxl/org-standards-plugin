@@ -1,6 +1,6 @@
 ---
 title: API design
-version: 1.1
+version: 1.2
 kind: [api, backend]
 ---
 <!-- PLACEHOLDER standards that exercise the format. Replace with real ones. -->
@@ -31,6 +31,15 @@ Why: one error shape lets every client handle errors the same way.
   "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
 }
 ```
+
+## API description
+<!-- tags: { concern: [documentation] } -->
+- Every HTTP API MUST publish an OpenAPI 3 description of its endpoints, generated from the code
+  (not written by hand), at `/openapi/v1.json`.
+- Endpoints SHOULD carry a summary, and declare their response types and error responses, so the
+  description says what callers will actually get.
+
+Why: other teams build against the description; one generated from the code can't drift from it.
 
 ## Pagination
 - Collection endpoints MUST be paginated, with a default page size of 50 and a maximum of 200.

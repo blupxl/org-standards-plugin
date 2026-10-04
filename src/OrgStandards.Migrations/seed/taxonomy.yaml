@@ -145,6 +145,10 @@ categories:
     description: Third-party packages and where they come from. The software supply chain.
     broader: [security]
     source: OWASP Top 10:2025 A03 Software Supply Chain Failures
+  documentation:
+    facet: concern
+    description: Describing an interface so others can use it. API descriptions and their explorers.
+    source: OpenAPI Specification 3.1 (OpenAPI Initiative)
 
   # What the code runs on
   dotnet:

@@ -14,7 +14,8 @@ developer gets:
 
 - **the standards for this task, and only those,** with product- and runtime-specific rules already
   applied;
-- **a check of the finished work** against each required rule, citing file and line;
+- **a check of the finished work** against each required rule, citing file and line, and a record
+  of what was applied and decided, saved with the change;
 - **an assessment of an existing project**, grouped by root cause into defects to fix and decisions
   for the architects, saved so each run can be compared with the last;
 - **a clear statement of what the standards don't cover,** instead of a confident guess.
