@@ -1,0 +1,201 @@
+# Golden set: tasks a developer might give Claude, and what the standards should answer.
+# PLACEHOLDER for the demo seed data. Written in the words a developer would use, not the words
+# the standards use, because that gap is what retrieval has to close.
+#
+#   task        the request, as typed
+#   scope       what the repository declares (its .claude/CLAUDE.md scope), if anything
+#   categories  how the task should be classified (taxonomy.yaml)
+#   expect      topics that must be found
+#   not         topics that must not come back (optional)
+#
+# A task with an empty `expect` has no standard: the right answer is nothing.
+
+tasks:
+  # Styling and UI
+  - task: Pick the colors for the new settings page
+    categories: [styling, design-tokens, ui]
+    expect: [Colors]
+  - task: The XYZ product page needs a new button color
+    scope: { product: [xyz-public-app] }
+    categories: [styling, branding]
+    expect: [Colors]
+  - task: Our Sass files still use @import, clean them up
+    categories: [sass]
+    expect: [Sass modules]
+  - task: Add a theme color variable to the SCSS
+    categories: [sass, design-tokens]
+    expect: [Sass variables, Colors]
+  - task: This stylesheet has selectors nested six levels deep
+    categories: [sass, css]
+    expect: [Nesting]
+  - task: Make the dashboard work on phones
+    categories: [layout]
+    expect: [Breakpoints]
+  - task: Use consistent gaps between the cards
+    categories: [layout, styling]
+    expect: [Spacing]
+  - task: Set the body text size in the stylesheet
+    categories: [css, layout]
+    expect: [Units]
+  - task: Add a save button and a card to the profile page
+    categories: [ui]
+    expect: [Components]
+
+  # Experience and accessibility
+  - task: Build a sign-up form with validation messages
+    categories: [ux, ui]
+    expect: [Forms, Error messages, Components]
+  - task: Show a spinner while the report loads
+    categories: [ux]
+    expect: [Loading states]
+  - task: What should we show users when the payment fails?
+    categories: [ux, content]
+    expect: [Error messages]
+  - task: Can a keyboard-only user reach every button on this page?
+    categories: [accessibility]
+    expect: [Keyboard]
+  - task: Is light grey text on white readable enough?
+    categories: [accessibility, styling]
+    expect: [Color contrast]
+  - task: Add an icon-only delete button
+    categories: [accessibility, ui]
+    expect: [Text alternatives]
+
+  # The public website (a product)
+  - task: Write the copy for the homepage hero
+    scope: { product: [acme-website] }
+    categories: [website, content]
+    expect: [Voice, Calls to action]
+  - task: Add a footer to the public site
+    scope: { product: [acme-website] }
+    categories: [website]
+    expect: [Footer]
+
+  # Front-end code
+  - task: Set up a new TypeScript project for the admin UI
+    categories: [frontend]
+    expect: [TypeScript]
+  - task: The page's JavaScript bundle is 3 MB
+    categories: [frontend, performance]
+    expect: [Bundle budget]
+  - task: Render user-written comments as HTML in the React app
+    categories: [react, security, input-validation]
+    expect: [Untrusted HTML]
+  - task: Add Google Analytics to the checkout page
+    categories: [frontend, security]
+    expect: [Third-party scripts, Content Security Policy]
+
+  # APIs and back end
+  - task: Which standards apply to a web API?
+    categories: [api, backend]
+    expect: [Routes and versioning, Errors, Pagination, Authentication, Authorization, Input validation]
+    # From the first end-to-end test: these browser rules came back for an API question.
+    not: [TypeScript, Browser support, Bundle budget, Content Security Policy, Untrusted HTML, Third-party scripts]
+  - task: Add a REST endpoint that returns a customer's orders
+    categories: [api, security]
+    expect: [Routes and versioning, Pagination, Authorization]
+  - task: Return a proper error body when an order isn't found
+    categories: [api]
+    expect: [Errors]
+    not: [Error messages]
+  - task: Add retries to the outbound call to the pricing service
+    categories: [resilience]
+    expect: [Retries, Timeouts]
+    not: [Colors]
+  - task: Calls to the inventory service sometimes hang forever
+    categories: [resilience]
+    expect: [Timeouts]
+  - task: The XYZ app calls the pricing service, how long should it wait?
+    scope: { product: [xyz-public-app] }
+    categories: [resilience]
+    expect: [Timeouts]
+  - task: The API is slow under load; requests block on database calls
+    categories: [performance, data-access]
+    expect: [Async I/O, Queries]
+  - task: Compress large JSON responses
+    categories: [performance, api]
+    expect: [Response compression]
+
+  # Caching
+  - task: Cache the product list
+    scope: { product: [xyz-public-app] }
+    categories: [caching]
+    expect: [Caching]
+  - task: Which key should I use to cache customer profiles?
+    categories: [caching]
+    expect: [Cache keys]
+
+  # Data access
+  - task: Add a new column to the Orders table
+    categories: [data-access]
+    expect: [Migrations]
+  - task: This page loads every customer and then their orders one by one
+    categories: [data-access, performance]
+    expect: [Queries]
+  - task: Where does the new service get its database connection string?
+    categories: [data-access, configuration]
+    expect: [Connections]
+
+  # Configuration and secrets
+  - task: Read the feature flag settings for each environment
+    categories: [configuration]
+    expect: [Settings, Environments]
+  - task: Store the database password for the new service
+    categories: [secrets, configuration]
+    expect: [Secrets in source]
+
+  # Security
+  - task: Validate the access token in the new API
+    categories: [authentication, api]
+    expect: [Authentication]
+  - task: Make sure users can't see another customer's invoice
+    categories: [authorization]
+    expect: [Authorization]
+  - task: Users type a search term that goes into a SQL query
+    categories: [input-validation, data-access]
+    expect: [Input validation, Output encoding, Queries]
+  - task: A scanner flagged a vulnerable NuGet package
+    categories: [dependencies]
+    expect: [Vulnerable packages]
+  - task: Add a new package feed for an internal library
+    categories: [dependencies]
+    expect: [Package sources]
+
+  # Observability
+  - task: Add logging to the payment workflow
+    categories: [observability, secrets]
+    expect: [Logging, Sensitive data in logs]
+  - task: Kubernetes needs a liveness probe for the service
+    categories: [observability]
+    expect: [Health endpoints]
+  - task: Trace a slow request across services
+    categories: [observability, performance]
+    expect: [Tracing]
+
+  # Runtimes: a runtime's own standards reach only projects on that runtime
+  - task: Set up the test project for our .NET API
+    scope: { runtime: [dotnet] }
+    categories: [testing]
+    expect: [Unit tests, Integration tests, Tests in .NET]
+    not: [Tests in Node]
+  - task: npm audit reports a critical vulnerability in our Node API
+    scope: { runtime: [node] }
+    categories: [dependencies]
+    expect: [Vulnerable packages, Node package audit]
+    not: [.NET package audit]
+
+  # Testing
+  - task: Write tests for the discount calculator
+    categories: [testing]
+    expect: [Unit tests]
+  - task: Test the API end to end with its database
+    categories: [testing]
+    expect: [Integration tests]
+
+  # Nothing applies: the right answer is no standards
+  - task: Tune the Kubernetes cluster's network policies
+    categories: []
+    expect: []
+  - task: Train a model to forecast next month's sales
+    categories: []
+    expect: []

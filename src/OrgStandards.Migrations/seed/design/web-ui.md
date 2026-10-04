@@ -1,9 +1,8 @@
 ---
 title: Web UI
-version: 2.1
-technology: [web-api, ui]
-area: [branding, user-interaction]
-company: acme
+version: 2.2
+kind: [ui, css, styling, design-tokens]
+concern: [branding]
 ---
 <!-- PLACEHOLDER standards that exercise the format. Every rule can be met with the demo design
      system (Acme.Web). {{design-system}} is filled in by the design standards server. -->
@@ -58,7 +57,3 @@ Every class is shown at {{design-system}}.
   </form>
 </body>
 ```
-
-## Error messages
-- User-facing error messages MUST use plain language and MUST NOT include stack traces or internal codes.
-- SHOULD say what the user can do next, and SHOULD appear in an `acme-alert--error`.

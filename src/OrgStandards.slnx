@@ -3,6 +3,7 @@
   <Project Path="Acme.Web/Acme.Web.csproj" />
   <Project Path="OrgStandards.Contracts/OrgStandards.Contracts.csproj" />
   <Project Path="OrgStandards.Data/OrgStandards.Data.csproj" />
+  <Project Path="OrgStandards.Evaluation/OrgStandards.Evaluation.csproj" />
   <Project Path="OrgStandards.Gateway/OrgStandards.Gateway.csproj" />
   <Project Path="OrgStandards.Migrations/OrgStandards.Migrations.csproj" />
   <Project Path="OrgStandards.ServiceDefaults/OrgStandards.ServiceDefaults.csproj" />

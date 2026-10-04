@@ -14,25 +14,74 @@ public class GatewayIntegrationTests(StandardsAppFixture app)
     {
         var document = await app.CallAsync("get_standards", Request(new()
         {
-            ["company"] = ["acme"],
             ["product"] = ["xyz-public-app"],
-            ["technology"] = ["web-api"],
+            ["kind"] = ["css", "backend"],
         }));
 
         Assert.Contains("> **Status:** complete", document);
         Assert.Contains("design ✓", document);
         Assert.Contains("platform ✓", document);
-        Assert.Contains("replaces the general topic (design v2.1)", document);    // Colors, from design
-        Assert.Contains("replaces the general topic (platform v1.0)", document);  // Timeouts, from platform
+        Assert.Contains("security ✓", document);
+        Assert.Contains("replaces the general topic (design v2.2)", document);    // Colors, from design
+        Assert.Contains("replaces the general topic (platform v1.2)", document);  // Timeouts, from platform
     }
 
     [RequiresContainerRuntimeFact]
-    public async Task A_request_without_a_company_is_invalid()
+    public async Task Each_request_in_a_batch_qualifies_its_kind_with_its_own_concerns()
     {
-        var document = await app.CallAsync("get_standards", Request(new() { ["technology"] = ["ui"] }));
+        // Security for the API, performance for the browser code: one call, two documents.
+        var documents = await app.CallAsync("get_standards", new()
+        {
+            ["requests"] = new[]
+            {
+                new Dictionary<string, object?> { ["id"] = "public-api", ["filter"] = new Dictionary<string, string[]> { ["kind"] = ["api"], ["concern"] = ["security"] } },
+                new Dictionary<string, object?> { ["id"] = "web", ["filter"] = new Dictionary<string, string[]> { ["kind"] = ["frontend"], ["concern"] = ["performance"] } },
+            },
+        });
+
+        var parts = documents.Split("> **Request:** ");
+        var api = Assert.Single(parts, part => part.StartsWith("public-api"));
+        var web = Assert.Single(parts, part => part.StartsWith("web"));
+
+        Assert.Contains("## Authorization", api);
+        Assert.DoesNotContain("## Content Security Policy", api);
+        Assert.DoesNotContain("## Bundle budget", api);
+
+        Assert.Contains("## Bundle budget", web);
+        Assert.DoesNotContain("## Content Security Policy", web);
+        Assert.DoesNotContain("## Authorization", web);
+    }
+
+    [RequiresContainerRuntimeFact]
+    public async Task Exclusions_leave_topics_out_and_list_them()
+    {
+        // A project that keeps its own look: its .claude/standards.json excludes branding.
+        var document = await app.CallAsync("get_standards", new()
+        {
+            ["requests"] = new[]
+            {
+                new Dictionary<string, object?>
+                {
+                    ["filter"] = new Dictionary<string, string[]> { ["kind"] = ["css"] },
+                    ["exclude"] = new Dictionary<string, string[]> { ["concern"] = ["branding"] },
+                },
+            },
+        });
+
+        Assert.Contains("> **Excluded by the project's scope:** Colors (design, concern = branding)", document);
+        Assert.DoesNotContain("## Colors", document);
+        Assert.Contains("## Spacing", document);   // css without a branding concern still applies
+    }
+
+    [RequiresContainerRuntimeFact]
+    public async Task A_company_filter_is_an_unknown_field()
+    {
+        // One deployment serves one company, so "company" isn't a field. A filter from an older
+        // project setup that still names it is rejected, with the valid fields listed.
+        var document = await app.CallAsync("get_standards", Request(new() { ["company"] = ["acme"] }));
 
         Assert.Contains("> **Status:** invalid", document);
-        Assert.Contains("Missing required field: company", document);
+        Assert.Contains("Unknown field(s): company", document);
         Assert.DoesNotContain("## ", document);
     }
 
@@ -42,7 +91,7 @@ public class GatewayIntegrationTests(StandardsAppFixture app)
         var topic = await app.CallAsync("get_topic", new()
         {
             ["topic"] = "Components",
-            ["filter"] = new Dictionary<string, string[]> { ["company"] = ["acme"], ["technology"] = ["ui"] },
+            ["filter"] = new Dictionary<string, string[]> { ["kind"] = ["ui"] },
         });
 
         var stylesheet = $"{app.DesignSystem.ToString().TrimEnd('/')}/css/acme.css";
@@ -56,11 +105,11 @@ public class GatewayIntegrationTests(StandardsAppFixture app)
     }
 
     [RequiresContainerRuntimeFact]
-    public async Task Discovery_lists_the_companies_and_products()
+    public async Task Discovery_lists_the_products()
     {
         var listing = await app.CallAsync("list_standards", new());
 
-        Assert.Contains("\"company\":[\"acme\"]", listing.Replace(" ", ""));
+        Assert.DoesNotContain("\"company\"", listing);
         Assert.Contains("acme-website", listing);
         Assert.Contains("xyz-public-app", listing);
     }

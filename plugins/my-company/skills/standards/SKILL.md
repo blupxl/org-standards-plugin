@@ -22,15 +22,29 @@ The task, if one was given: $ARGUMENTS
 
 ## 1. Work out the scope
 
-If the repository's CLAUDE.md declares a standards scope (a filter set by the architects), start
-from it, and narrow or extend it for the task. Otherwise, decide what the work is for:
+If the repository has `.claude/standards.json` (set by the architects), start from its `scope`,
+and narrow or extend it for the task. (Older repositories declare the scope in `.claude/CLAUDE.md`
+instead.) Otherwise, decide what the work is for:
 
-- **company**: whose standards apply. Required: standards are kept per company and never mix.
-  The repository's scope names it; if nothing does, ask.
 - **product**: which product this is. Look at the repository name, README and solution/project
   names. If it isn't clear, ask the user. Don't guess a product.
-- **technology**: what kind of component (for example `web-api`, `backend-service`, `ui`).
-- **area** (optional): narrow to the parts the task touches (for example `branding`, `performance`).
+- **kind**: what the code is (for example `api`, `backend`, `css`, `react`). List every kind the
+  work touches; values within a field are alternatives, so more kinds bring more standards.
+- **concern** (optional): what the work must achieve (for example `security`, `performance`,
+  `accessibility`). It narrows: only standards for those concerns come back. Leave it out to get
+  every concern for the kind, which is usually right before building; add it for a focused
+  question ("the security rules for this API").
+- **runtime**: what the code runs on (`dotnet` for C#/.NET, `node` for JavaScript or TypeScript
+  servers). Name it whenever the work has one: standards written for a runtime come back only when
+  it's named, and standards without one always apply. Tell it from the files (`*.csproj` means
+  `dotnet`; a `package.json` with server code means `node`); if a component's runtime isn't clear,
+  ask.
+
+**Exclusions** come only from the `exclude` list in `.claude/standards.json`. Each entry names a
+field and values (or `topic` and topic names) and a `reason`. Pass them to `get_standards` as the
+request's `exclude` (merge the entries: field -> all their values; leave out `reason`), and keep the
+reasons for your report. Never add an exclusion of your own, even if the user asks for one while
+working: say that exclusions are the architects' decision, made in `.claude/standards.json`.
 
 Call `list_standards` first and use only field names and values it returns. If the product the
 user named isn't listed, say so and ask. Don't substitute a close match without confirmation.
@@ -38,7 +52,11 @@ user named isn't listed, say so and ask. Don't substitute a close match without 
 ## 2. Get the standards
 
 Call `get_standards` once, with one request per component when the task spans several (for
-example the API and its UI). Then read each document's header before anything else:
+example the API and its UI). Each request has its own `kind` and `concern`, so concerns can differ
+per component: `{ "kind": ["api"], "concern": ["security"] }` for a public API and
+`{ "kind": ["frontend"], "concern": ["performance"] }` for its page, in the same call. Give every
+request the project's `exclude`, if it has one. Then read each document's header before anything
+else:
 
 | Status | What to do |
 |---|---|
@@ -67,7 +85,7 @@ so when your work falls into a gap.
 
 When the change is done, hand it to the `standards-reviewer` agent with:
 
-- the exact filter(s) you used for `get_standards`, and
+- the exact filter(s) and exclusions you used for `get_standards`, and
 - the list of files you created or changed.
 
 The reviewer fetches the standards itself and checks the files independently. Pass on its findings

@@ -26,6 +26,7 @@
     <ProjectReference Include="..\OrgStandards.Migrations\OrgStandards.Migrations.csproj" />
     <ProjectReference Include="..\OrgStandards.Contracts\OrgStandards.Contracts.csproj" />
     <ProjectReference Include="..\OrgStandards.AppHost\OrgStandards.AppHost.csproj" />
+    <ProjectReference Include="..\OrgStandards.Evaluation\OrgStandards.Evaluation.csproj" />
   </ItemGroup>
 
 </Project>

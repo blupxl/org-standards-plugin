@@ -1,0 +1,1378 @@
+{
+  "run": {
+    "strategy": "tags-suggest",
+    "description": "Today\u0027s tag-only matching: task words that are category values, plus the gateway\u0027s first \u0022did you mean\u0022 suggestion for the rest.",
+    "ranked": false,
+    "date": "2026-10-03",
+    "commit": "c667422",
+    "uncommittedChanges": false,
+    "data": "seed (fictitious placeholder standards)",
+    "standardsFingerprint": "edb230d305d1",
+    "goldenSetFingerprint": "33bd42062bb0",
+    "owners": 3,
+    "topics": 60,
+    "model": "none"
+  },
+  "summary": {
+    "tasks": 47,
+    "tasksWithStandards": 45,
+    "tasksWithoutStandards": 2,
+    "meanRecall": 0.14444444444444443,
+    "foundAllRate": 0.13333333333333333,
+    "foundAnyRate": 0.15555555555555556,
+    "returnedNothing": 30,
+    "meanPrecision": 0.0625685588920883,
+    "meanReturned": 3.0638297872340425,
+    "forbiddenReturned": 0,
+    "noStandardCorrect": 1,
+    "meanReciprocalRank": null,
+    "meanRecallAt5": null,
+    "meanCategoryRecall": 0.09629629629629631,
+    "meanCategoryPrecision": 0.24509803921568624
+  },
+  "tasks": [
+    {
+      "task": "Pick the colors for the new settings page",
+      "scope": {},
+      "expected": [
+        "Colors"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Colors"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "styling",
+        "design-tokens",
+        "ui"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "The XYZ product page needs a new button color",
+      "scope": {
+        "product": [
+          "xyz-public-app"
+        ]
+      },
+      "expected": [
+        "Colors"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Colors"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "styling",
+        "branding"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Our Sass files still use @import, clean them up",
+      "scope": {},
+      "expected": [
+        "Sass modules"
+      ],
+      "returned": [
+        "Sass modules",
+        "Sass variables",
+        "Nesting"
+      ],
+      "found": [
+        "Sass modules"
+      ],
+      "missed": [],
+      "forbidden": [],
+      "recall": 1,
+      "precision": 0.3333333333333333,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "sass"
+      ],
+      "categories": [
+        "sass"
+      ],
+      "categoryRecall": 1,
+      "categoryPrecision": 1
+    },
+    {
+      "task": "Add a theme color variable to the SCSS",
+      "scope": {},
+      "expected": [
+        "Sass variables",
+        "Colors"
+      ],
+      "returned": [
+        "Spacing",
+        "Breakpoints",
+        "Units",
+        "Sass modules",
+        "Sass variables",
+        "Nesting",
+        "Colors",
+        "Components"
+      ],
+      "found": [
+        "Sass variables",
+        "Colors"
+      ],
+      "missed": [],
+      "forbidden": [],
+      "recall": 1,
+      "precision": 0.25,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "sass",
+        "design-tokens"
+      ],
+      "categories": [
+        "css"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "This stylesheet has selectors nested six levels deep",
+      "scope": {},
+      "expected": [
+        "Nesting"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Nesting"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "sass",
+        "css"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Make the dashboard work on phones",
+      "scope": {},
+      "expected": [
+        "Breakpoints"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Breakpoints"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "layout"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Use consistent gaps between the cards",
+      "scope": {},
+      "expected": [
+        "Spacing"
+      ],
+      "returned": [
+        "Routes and versioning",
+        "Errors",
+        "Pagination",
+        "Async I/O",
+        "Response compression",
+        "Timeouts",
+        "Retries",
+        "Authentication",
+        "Authorization",
+        "Input validation",
+        "Output encoding"
+      ],
+      "found": [],
+      "missed": [
+        "Spacing"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "layout",
+        "styling"
+      ],
+      "categories": [
+        "api"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "Set the body text size in the stylesheet",
+      "scope": {},
+      "expected": [
+        "Units"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Units"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "css",
+        "layout"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Add a save button and a card to the profile page",
+      "scope": {},
+      "expected": [
+        "Components"
+      ],
+      "returned": [
+        "Sass modules",
+        "Sass variables",
+        "Nesting"
+      ],
+      "found": [],
+      "missed": [
+        "Components"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "ui"
+      ],
+      "categories": [
+        "sass"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "Build a sign-up form with validation messages",
+      "scope": {},
+      "expected": [
+        "Forms",
+        "Error messages",
+        "Components"
+      ],
+      "returned": [
+        "Conformance target",
+        "Keyboard",
+        "Color contrast",
+        "Text alternatives",
+        "TypeScript",
+        "Bundle budget",
+        "Browser support",
+        "Spacing",
+        "Breakpoints",
+        "Units",
+        "React components",
+        "Error messages",
+        "Forms",
+        "Loading states",
+        "Colors",
+        "Components",
+        "Caching",
+        "Cache keys",
+        "Async I/O",
+        "Response compression",
+        "Authentication",
+        "Authorization",
+        "Input validation",
+        "Output encoding"
+      ],
+      "found": [
+        "Forms",
+        "Error messages",
+        "Components"
+      ],
+      "missed": [],
+      "forbidden": [],
+      "recall": 1,
+      "precision": 0.125,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "ux",
+        "ui"
+      ],
+      "categories": [
+        "ui",
+        "performance",
+        "input-validation"
+      ],
+      "categoryRecall": 0.5,
+      "categoryPrecision": 0.3333333333333333
+    },
+    {
+      "task": "Show a spinner while the report loads",
+      "scope": {},
+      "expected": [
+        "Loading states"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Loading states"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "ux"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "What should we show users when the payment fails?",
+      "scope": {},
+      "expected": [
+        "Error messages"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Error messages"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "ux",
+        "content"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Can a keyboard-only user reach every button on this page?",
+      "scope": {},
+      "expected": [
+        "Keyboard"
+      ],
+      "returned": [
+        "React components"
+      ],
+      "found": [],
+      "missed": [
+        "Keyboard"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "accessibility"
+      ],
+      "categories": [
+        "react"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "Is light grey text on white readable enough?",
+      "scope": {},
+      "expected": [
+        "Color contrast"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Color contrast"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "accessibility",
+        "styling"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Add an icon-only delete button",
+      "scope": {},
+      "expected": [
+        "Text alternatives"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Text alternatives"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "accessibility",
+        "ui"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Write the copy for the homepage hero",
+      "scope": {
+        "product": [
+          "acme-website"
+        ]
+      },
+      "expected": [
+        "Voice",
+        "Calls to action"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Voice",
+        "Calls to action"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "website",
+        "content"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Add a footer to the public site",
+      "scope": {
+        "product": [
+          "acme-website"
+        ]
+      },
+      "expected": [
+        "Footer"
+      ],
+      "returned": [
+        "Colors",
+        "Typography",
+        "Page structure",
+        "Navigation",
+        "Calls to action",
+        "Voice",
+        "Accessibility",
+        "Footer"
+      ],
+      "found": [
+        "Footer"
+      ],
+      "missed": [],
+      "forbidden": [],
+      "recall": 1,
+      "precision": 0.125,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "website"
+      ],
+      "categories": [
+        "website"
+      ],
+      "categoryRecall": 1,
+      "categoryPrecision": 1
+    },
+    {
+      "task": "Set up a new TypeScript project for the admin UI",
+      "scope": {},
+      "expected": [
+        "TypeScript"
+      ],
+      "returned": [
+        "Conformance target",
+        "Keyboard",
+        "Color contrast",
+        "Text alternatives",
+        "Spacing",
+        "Breakpoints",
+        "Units",
+        "React components",
+        "Error messages",
+        "Forms",
+        "Loading states",
+        "Colors",
+        "Components",
+        "Routes and versioning",
+        "Errors",
+        "Pagination",
+        "Async I/O",
+        "Response compression",
+        "Timeouts",
+        "Retries",
+        "Authentication",
+        "Authorization",
+        "Input validation",
+        "Output encoding"
+      ],
+      "found": [],
+      "missed": [
+        "TypeScript"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "frontend"
+      ],
+      "categories": [
+        "ui",
+        "api"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "The page\u0027s JavaScript bundle is 3 MB",
+      "scope": {},
+      "expected": [
+        "Bundle budget"
+      ],
+      "returned": [
+        "Spacing",
+        "Breakpoints",
+        "Units",
+        "Sass modules",
+        "Sass variables",
+        "Nesting",
+        "Colors",
+        "Components"
+      ],
+      "found": [],
+      "missed": [
+        "Bundle budget"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "frontend",
+        "performance"
+      ],
+      "categories": [
+        "css"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "Render user-written comments as HTML in the React app",
+      "scope": {},
+      "expected": [
+        "Untrusted HTML"
+      ],
+      "returned": [
+        "React components"
+      ],
+      "found": [],
+      "missed": [
+        "Untrusted HTML"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "react",
+        "security",
+        "input-validation"
+      ],
+      "categories": [
+        "react"
+      ],
+      "categoryRecall": 0.3333333333333333,
+      "categoryPrecision": 1
+    },
+    {
+      "task": "Add Google Analytics to the checkout page",
+      "scope": {},
+      "expected": [
+        "Third-party scripts",
+        "Content Security Policy"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Third-party scripts",
+        "Content Security Policy"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "frontend",
+        "security"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Add a REST endpoint that returns a customer\u0027s orders",
+      "scope": {},
+      "expected": [
+        "Routes and versioning",
+        "Pagination",
+        "Authorization"
+      ],
+      "returned": [
+        "React components"
+      ],
+      "found": [],
+      "missed": [
+        "Routes and versioning",
+        "Pagination",
+        "Authorization"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "api",
+        "security"
+      ],
+      "categories": [
+        "react"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "Return a proper error body when an order isn\u0027t found",
+      "scope": {},
+      "expected": [
+        "Errors"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Errors"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "api"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Add retries to the outbound call to the pricing service",
+      "scope": {},
+      "expected": [
+        "Retries",
+        "Timeouts"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Retries",
+        "Timeouts"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "resilience"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Calls to the inventory service sometimes hang forever",
+      "scope": {},
+      "expected": [
+        "Timeouts"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Timeouts"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "resilience"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "The XYZ app calls the pricing service, how long should it wait?",
+      "scope": {
+        "product": [
+          "xyz-public-app"
+        ]
+      },
+      "expected": [
+        "Timeouts"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Timeouts"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "resilience"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "The API is slow under load; requests block on database calls",
+      "scope": {},
+      "expected": [
+        "Async I/O",
+        "Queries"
+      ],
+      "returned": [
+        "Routes and versioning",
+        "Errors",
+        "Pagination",
+        "Async I/O",
+        "Response compression",
+        "Timeouts",
+        "Retries",
+        "Authentication",
+        "Authorization",
+        "Input validation",
+        "Output encoding"
+      ],
+      "found": [
+        "Async I/O"
+      ],
+      "missed": [
+        "Queries"
+      ],
+      "forbidden": [],
+      "recall": 0.5,
+      "precision": 0.09090909090909091,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "performance",
+        "data-access"
+      ],
+      "categories": [
+        "api"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "Compress large JSON responses",
+      "scope": {},
+      "expected": [
+        "Response compression"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Response compression"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "performance",
+        "api"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Cache the product list",
+      "scope": {
+        "product": [
+          "xyz-public-app"
+        ]
+      },
+      "expected": [
+        "Caching"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Caching"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "caching"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Which key should I use to cache customer profiles?",
+      "scope": {},
+      "expected": [
+        "Cache keys"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Cache keys"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "caching"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Add a new column to the Orders table",
+      "scope": {},
+      "expected": [
+        "Migrations"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Migrations"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "data-access"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "This page loads every customer and then their orders one by one",
+      "scope": {},
+      "expected": [
+        "Queries"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Queries"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "data-access",
+        "performance"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Where does the new service get its database connection string?",
+      "scope": {},
+      "expected": [
+        "Connections"
+      ],
+      "returned": [
+        "Spacing",
+        "Breakpoints",
+        "Units",
+        "Sass modules",
+        "Sass variables",
+        "Nesting",
+        "Colors",
+        "Components"
+      ],
+      "found": [],
+      "missed": [
+        "Connections"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "data-access",
+        "configuration"
+      ],
+      "categories": [
+        "styling"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "Read the feature flag settings for each environment",
+      "scope": {},
+      "expected": [
+        "Settings",
+        "Environments"
+      ],
+      "returned": [
+        "React components"
+      ],
+      "found": [],
+      "missed": [
+        "Settings",
+        "Environments"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "configuration"
+      ],
+      "categories": [
+        "react"
+      ],
+      "categoryRecall": 0,
+      "categoryPrecision": 0
+    },
+    {
+      "task": "Store the database password for the new service",
+      "scope": {},
+      "expected": [
+        "Secrets in source"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Secrets in source"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "secrets",
+        "configuration"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Validate the access token in the new API",
+      "scope": {},
+      "expected": [
+        "Authentication"
+      ],
+      "returned": [
+        "Colors",
+        "Components",
+        "Routes and versioning",
+        "Errors",
+        "Pagination",
+        "Migrations",
+        "Queries",
+        "Connections",
+        "Async I/O",
+        "Response compression",
+        "Timeouts",
+        "Retries",
+        "Authentication",
+        "Authorization",
+        "Input validation",
+        "Output encoding"
+      ],
+      "found": [
+        "Authentication"
+      ],
+      "missed": [],
+      "forbidden": [],
+      "recall": 1,
+      "precision": 0.0625,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "authentication",
+        "api"
+      ],
+      "categories": [
+        "api",
+        "data-access",
+        "design-tokens"
+      ],
+      "categoryRecall": 0.5,
+      "categoryPrecision": 0.3333333333333333
+    },
+    {
+      "task": "Make sure users can\u0027t see another customer\u0027s invoice",
+      "scope": {},
+      "expected": [
+        "Authorization"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Authorization"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "authorization"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Users type a search term that goes into a SQL query",
+      "scope": {},
+      "expected": [
+        "Input validation",
+        "Output encoding",
+        "Queries"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Input validation",
+        "Output encoding",
+        "Queries"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "input-validation",
+        "data-access"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "A scanner flagged a vulnerable NuGet package",
+      "scope": {},
+      "expected": [
+        "Vulnerable packages"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Vulnerable packages"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "dependencies"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Add a new package feed for an internal library",
+      "scope": {},
+      "expected": [
+        "Package sources"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Package sources"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "dependencies"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Add logging to the payment workflow",
+      "scope": {},
+      "expected": [
+        "Logging",
+        "Sensitive data in logs"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Logging",
+        "Sensitive data in logs"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "observability",
+        "secrets"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Kubernetes needs a liveness probe for the service",
+      "scope": {},
+      "expected": [
+        "Health endpoints"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Health endpoints"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "observability"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Trace a slow request across services",
+      "scope": {},
+      "expected": [
+        "Tracing"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Tracing"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "observability",
+        "performance"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Write tests for the discount calculator",
+      "scope": {},
+      "expected": [
+        "Unit tests"
+      ],
+      "returned": [],
+      "found": [],
+      "missed": [
+        "Unit tests"
+      ],
+      "forbidden": [],
+      "recall": 0,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "testing"
+      ],
+      "categories": [],
+      "categoryRecall": 0,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Test the API end to end with its database",
+      "scope": {},
+      "expected": [
+        "Integration tests"
+      ],
+      "returned": [
+        "Routes and versioning",
+        "Errors",
+        "Pagination",
+        "Async I/O",
+        "Response compression",
+        "Timeouts",
+        "Retries",
+        "Unit tests",
+        "Integration tests",
+        "Authentication",
+        "Authorization",
+        "Input validation",
+        "Output encoding"
+      ],
+      "found": [
+        "Integration tests"
+      ],
+      "missed": [],
+      "forbidden": [],
+      "recall": 1,
+      "precision": 0.07692307692307693,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [
+        "testing"
+      ],
+      "categories": [
+        "api",
+        "testing"
+      ],
+      "categoryRecall": 1,
+      "categoryPrecision": 0.5
+    },
+    {
+      "task": "Tune the Kubernetes cluster\u0027s network policies",
+      "scope": {},
+      "expected": [],
+      "returned": [],
+      "found": [],
+      "missed": [],
+      "forbidden": [],
+      "recall": null,
+      "precision": null,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [],
+      "categories": [],
+      "categoryRecall": null,
+      "categoryPrecision": null
+    },
+    {
+      "task": "Train a model to forecast next month\u0027s sales",
+      "scope": {},
+      "expected": [],
+      "returned": [
+        "Sass modules",
+        "Sass variables",
+        "Nesting"
+      ],
+      "found": [],
+      "missed": [],
+      "forbidden": [],
+      "recall": null,
+      "precision": 0,
+      "reciprocalRank": null,
+      "recallAt5": null,
+      "expectedCategories": [],
+      "categories": [
+        "sass"
+      ],
+      "categoryRecall": null,
+      "categoryPrecision": 0
+    }
+  ]
+}
