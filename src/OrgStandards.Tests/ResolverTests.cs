@@ -73,22 +73,22 @@ public class ResolverTests
 
     [Fact]
     public void Unknown_fields_are_reported() =>
-        Assert.Equal(["tier"], Resolver.UnknownFields(Map(("company", ["acme"]), ("tier", ["gold"])), Map(("company", ["acme"]))));
+        Assert.Equal(["tier"], Resolver.UnknownFields(Map(("technology", ["ui"]), ("tier", ["gold"])), Map(("technology", ["ui"]))));
 
     [Fact]
-    public void A_request_without_a_company_resolves_to_nothing_and_lists_the_companies()
+    public void An_empty_filter_resolves_every_general_topic()
     {
-        var resolution = Resolver.Resolve(null, Map(("technology", ["ui"])), 0,
+        var resolution = Resolver.Resolve(null, Map(), 0,
             [Answer("design", [Topic("Colors", technology: ["ui"])])]);
 
-        Assert.Empty(resolution.Topics);
-        Assert.Equal(["acme"], resolution.ValidCompanies);
+        Assert.Equal(["Colors"], resolution.Topics.Select(t => t.Topic.Topic));
+        Assert.Empty(resolution.UnknownFields);
     }
 
     [Fact]
     public void Answers_from_every_owner_are_merged()
     {
-        var resolution = Resolver.Resolve(null, Map(("company", ["acme"])), 0,
+        var resolution = Resolver.Resolve(null, Map(), 0,
         [
             Answer("design", [Topic("Colors")]),
             Answer("platform", [Topic("Timeouts")]),
@@ -101,7 +101,7 @@ public class ResolverTests
     [Fact]
     public void Requested_values_that_nothing_answered_are_listed()
     {
-        var resolution = Resolver.Resolve(null, Map(("company", ["acme"]), ("area", ["branding", "accessibility"])), 0,
+        var resolution = Resolver.Resolve(null, Map(("area", ["branding", "accessibility"])), 0,
             [Answer("design", [Topic("Colors", area: ["branding"])], catalog: [Topic("Colors", area: ["branding", "accessibility"])])]);
 
         Assert.Contains("Nothing found for area = accessibility.", resolution.NotCovered);
@@ -111,7 +111,7 @@ public class ResolverTests
     [Fact]
     public void An_unavailable_owner_does_not_fail_the_others()
     {
-        var resolution = Resolver.Resolve(null, Map(("company", ["acme"])), 0,
+        var resolution = Resolver.Resolve(null, Map(), 0,
             [Answer("design", [Topic("Colors")]), Unavailable("platform")]);
 
         Assert.Single(resolution.Topics);

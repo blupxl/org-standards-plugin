@@ -5,8 +5,11 @@ namespace OrgStandards.Gateway;
 
 public sealed record StandardsRequest(
     [property: Description("Optional id, echoed back so documents can be matched to requests.")] string? Id,
-    [property: Description("Field -> accepted values, e.g. { \"product\": [\"xyz-public-app\"], \"technology\": [\"web-api\", \"backend-service\"] }.")]
-    Dictionary<string, string[]> Filter);
+    [property: Description("Field -> accepted values, e.g. { \"product\": [\"xyz-public-app\"], \"kind\": [\"api\"], \"concern\": [\"resilience\"] }.")]
+    Dictionary<string, string[]> Filter,
+    [property: Description("Optional. Only the exclusions in the project's .claude/standards.json: field -> values, plus \"topic\" -> topic names, " +
+                           "e.g. { \"concern\": [\"branding\"] }. Matching topics are left out and listed as excluded. Never add exclusions of your own.")]
+    Dictionary<string, string[]>? Exclude = null);
 
 public sealed record SourceStatus(string Name, string Status, string? Error);
 
@@ -33,6 +36,9 @@ public sealed record Resolution(
     string[] Conflicts,
     string[] UnknownFields,
     string[] ValidFields,
-    string[] ValidCompanies,
     Dictionary<string, Dictionary<string, string[]>> UnknownValues,
-    string[] NotCovered);
+    string[] NotCovered,
+    ExcludedTopic[] Excluded);
+
+// A topic left out by the project's exclusions. Reason says which exclusion matched it.
+public sealed record ExcludedTopic(string Topic, string Source, string Reason);

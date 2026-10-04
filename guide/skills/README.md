@@ -1,0 +1,14 @@
+# Skills and agent
+
+What the plugin adds to Claude Code, and the repository's own setup skill. Back to the
+[guide](../README.md) or the [main README](../../README.md).
+
+| | Runs | Does |
+|---|---|---|
+| [`/acme:standards`](standards.md) | On its own when work has to fit company conventions, or when called | Brings the standards for a task into the conversation, and has the work checked |
+| [`/acme:assess`](assess.md) | When asked to assess a project | Checks an existing project against its standards; saves each run for comparison |
+| [`acme:standards-reviewer`](standards-reviewer.md) | Handed work by the two skills, or asked for a review | Read-only agent that checks code against the standards, rule by rule |
+| [`/setup`](setup.md) | When you run it in this repository | Sets up, updates, renames or uninstalls the plugin on this machine |
+
+The `acme` prefix comes from the local catalog entry; [renamed](../install.md#update-rename-check-uninstall),
+the same skills become `/<name>:standards` and `/<name>:assess`.

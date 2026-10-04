@@ -2,9 +2,8 @@
 title: XYZ Public App services
 version: 1.1
 product: xyz-public-app
-technology: [web-api]
-area: [resilience, performance]
-company: acme
+kind: [backend, api]
+concern: [resilience, caching, performance]
 ---
 <!-- PLACEHOLDER standards that exercise the format. Replace with real ones. -->
 

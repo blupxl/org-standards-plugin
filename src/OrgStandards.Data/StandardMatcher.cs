@@ -6,32 +6,25 @@ namespace OrgStandards.Data;
 public static class StandardMatcher
 {
     // OR within a field, AND across fields. Empty value lists don't constrain.
-    // Two fields are special; see StandardFields. A topic's company must be requested (companies
-    // never mix), and its product must be requested (general topics are the base layer). For
-    // discovery, both are visible without a filter, so callers can find out which values exist.
+    // Qualifier fields are special; see StandardFields. A topic's product or runtime must be
+    // requested (topics without one apply to everything). For discovery, qualified topics are
+    // visible without a filter, so callers can find out which products and runtimes exist.
     public static bool Matches(
         IReadOnlyDictionary<string, string[]> tags, IReadOnlyDictionary<string, string[]>? filter, bool discovery = false)
     {
-        var wantedCompanies = ValuesOf(filter, StandardFields.Partition);
-        if ((wantedCompanies.Length > 0 || !discovery) && !Overlaps(ValuesOf(tags, StandardFields.Partition), wantedCompanies))
+        foreach (var qualifier in StandardFields.Qualifiers)
         {
-            return false;
-        }
-
-        var wantedProducts = ValuesOf(filter, StandardFields.Overlay);
-        var ruleProducts = ValuesOf(tags, StandardFields.Overlay);
-        var productFiltered = wantedProducts.Length > 0;
-
-        if (ruleProducts.Length > 0 && (productFiltered || !discovery) && !Overlaps(ruleProducts, wantedProducts))
-        {
-            return false;
+            var wanted = ValuesOf(filter, qualifier);
+            var own = ValuesOf(tags, qualifier);
+            if (own.Length > 0 && (wanted.Length > 0 || !discovery) && !Overlaps(own, wanted))
+            {
+                return false;
+            }
         }
 
         foreach (var (field, values) in filter ?? new Dictionary<string, string[]>())
         {
-            if (values.Length == 0 ||
-                field.Equals(StandardFields.Overlay, StringComparison.OrdinalIgnoreCase) ||
-                field.Equals(StandardFields.Partition, StringComparison.OrdinalIgnoreCase))
+            if (values.Length == 0 || IsQualifier(field))
             {
                 continue;
             }
@@ -69,6 +62,9 @@ public static class StandardMatcher
                 g => g.Key,
                 g => g.SelectMany(t => t.Value).Distinct(StringComparer.OrdinalIgnoreCase).Order().ToArray(),
                 StringComparer.OrdinalIgnoreCase);
+
+    private static bool IsQualifier(string field) =>
+        StandardFields.Qualifiers.Contains(field, StringComparer.OrdinalIgnoreCase);
 
     private static string[] ValuesOf(IReadOnlyDictionary<string, string[]>? map, string field) =>
         map?.FirstOrDefault(kv => kv.Key.Equals(field, StringComparison.OrdinalIgnoreCase)).Value ?? [];

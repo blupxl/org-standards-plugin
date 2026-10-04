@@ -1,10 +1,9 @@
 ---
 title: Acme public website
 version: 1.0
-company: acme
 product: acme-website
-technology: [website, ui]
-area: [branding, content, navigation, accessibility, user-interaction]
+kind: [website, ui, styling, content]
+concern: [branding, accessibility, ux]
 ---
 <!-- PLACEHOLDER standards for the company's public site. The palette (crimson, greys, white) and
      structure were modeled on a real corporate site for the demo; the name stays Acme. -->

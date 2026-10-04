@@ -1,9 +1,7 @@
 ---
 title: React apps
 version: 1.0
-technology: [react]
-area: [user-interaction]
-company: acme
+kind: [react, frontend, ui]
 ---
 <!-- PLACEHOLDER. `@acme/ui` is fictional: this document only shows a rule scoped to one
      technology, so it never reaches plain HTML pages. Don't install a package by this name. -->

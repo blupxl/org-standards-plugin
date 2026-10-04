@@ -26,7 +26,6 @@ public sealed class StandardsMarkdownTests : IDisposable
             ---
             title: Web UI
             version: 2.1
-            company: acme
             technology: [web-api, ui]
             ---
             ## Colors
@@ -35,7 +34,6 @@ public sealed class StandardsMarkdownTests : IDisposable
 
         Assert.Equal("Web UI", topic.Document);
         Assert.Equal("2.1", topic.Version);
-        Assert.Equal(["acme"], TagValues(topic, "company"));
         Assert.Equal(["web-api", "ui"], TagValues(topic, "technology"));
         Assert.Empty(TagValues(topic, "title"));
     }
@@ -96,5 +94,34 @@ public sealed class StandardsMarkdownTests : IDisposable
 
         Assert.Equal("observability", topic.Document);
         Assert.Equal("unversioned", topic.Version);
+    }
+
+    [Fact]
+    public void A_topic_can_narrow_its_documents_tags()
+    {
+        var topics = Parse("""
+            ---
+            title: .NET services
+            runtime: dotnet
+            kind: [backend, api, testing]
+            ---
+            ## Tests in .NET
+            <!-- tags: { kind: [testing] } -->
+            - MUST use xUnit.
+
+            ## Resilience handler in .NET
+            <!-- tags: { kind: [backend, api], concern: [resilience] } -->
+            - MUST use the standard resilience handler.
+            """);
+
+        var tests = topics.Single(t => t.Name == "Tests in .NET");
+        Assert.Equal(["testing"], TagValues(tests, "kind"));
+        Assert.Equal(["dotnet"], TagValues(tests, "runtime"));     // inherited
+        Assert.Empty(TagValues(tests, "concern"));
+        Assert.Equal("- MUST use xUnit.", tests.Body);               // the tags line isn't part of the rules
+
+        var resilience = topics.Single(t => t.Name == "Resilience handler in .NET");
+        Assert.Equal(["resilience"], TagValues(resilience, "concern"));
+        Assert.Equal(["backend", "api"], TagValues(resilience, "kind"));
     }
 }

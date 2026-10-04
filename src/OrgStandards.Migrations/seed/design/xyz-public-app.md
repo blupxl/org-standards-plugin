@@ -2,9 +2,8 @@
 title: XYZ Public App UI
 version: 1.1
 product: xyz-public-app
-technology: [web-api, ui]
-area: [branding]
-company: acme
+kind: [ui, css, styling, design-tokens]
+concern: [branding]
 ---
 <!-- PLACEHOLDER standards that exercise the format. Replace with real ones. -->
 

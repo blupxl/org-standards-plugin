@@ -1,0 +1,159 @@
+# The categories standards are classified with: what the work is and what it must achieve,
+# not who wrote it.
+# PLACEHOLDER starting set for the demo. It grows over time; every category here must be used by
+# at least one standard, and every standard's categories must be listed here (both are tested).
+#
+#   facet        kind: what the code or work is (api, css, react, ...),
+#                concern: what it must achieve (security, performance, accessibility, ...), or
+#                runtime: what the code runs on (dotnet, node).
+#                Standards and filters use one field per facet. Values within a field are
+#                alternatives (OR); kind and concern narrow each other (AND), so
+#                { kind: [api], concern: [security] } is API security, not browser security.
+#                runtime qualifies instead: a standard without one applies to every runtime, and
+#                one written for a runtime applies only when the request names that runtime.
+#   description  what the category covers (later: embedded, to match tasks to categories)
+#   broader      more general categories it belongs to, in the same facet (sass is css is styling)
+#   source       where the category comes from, when a published standard defines it
+#   files        file patterns that indicate it, when there are any
+
+categories:
+  # What users see and how it feels
+  ui:
+    facet: kind
+    description: What users see and interact with in a page or app.
+    source: ISO/IEC 25010:2023 interaction capability
+  ux:
+    facet: concern
+    description: How it feels to use. Flows, forms, feedback, loading and error states.
+    source: ISO/IEC 25010:2023 interaction capability
+  accessibility:
+    facet: concern
+    description: Usable by everyone, including keyboard and screen-reader users. Contrast, focus, text alternatives.
+    broader: [ux]
+    source: W3C WCAG 2.2
+  content:
+    facet: kind
+    description: The words on the page. Voice, tone, labels and calls to action.
+  branding:
+    facet: concern
+    description: Looking like the company or product. Palette, logo, co-branding.
+  styling:
+    facet: kind
+    description: Visual presentation. Color, spacing, typography, layout.
+    broader: [ui]
+  css:
+    facet: kind
+    description: Cascading Style Sheets.
+    broader: [styling]
+    source: GitHub Linguist (CSS)
+    files: ["*.css"]
+  sass:
+    facet: kind
+    description: The Sass preprocessor (SCSS syntax). Compiles to CSS.
+    broader: [css]
+    source: GitHub Linguist (SCSS, Sass)
+    files: ["*.scss", "*.sass"]
+  design-tokens:
+    facet: kind
+    description: Named design values (colors, sizes) used instead of literal values.
+    broader: [styling]
+    source: W3C Design Tokens Format Module 2025.10
+  layout:
+    facet: kind
+    description: Page structure, spacing and responsive behavior across screen sizes.
+    broader: [styling]
+  website:
+    facet: kind
+    description: The company's public marketing website.
+    broader: [ui]
+
+  # Code that runs in the browser
+  frontend:
+    facet: kind
+    description: Code that runs in the browser. TypeScript, bundles, browser support.
+    files: ["*.tsx", "*.jsx", "*.vue"]
+  react:
+    facet: kind
+    description: Apps built with React.
+    broader: [frontend]
+    files: ["*.tsx", "*.jsx"]
+
+  # Code that runs on servers
+  backend:
+    facet: kind
+    description: Server-side code and services, in any runtime.
+  api:
+    facet: kind
+    description: HTTP endpoints other systems or front ends call. Routes, versions, errors, paging.
+    broader: [backend]
+    source: OWASP ASVS 5.0.0 V4 API and Web Service
+  data-access:
+    facet: kind
+    description: Reading and writing databases. Queries, migrations, connections.
+    broader: [backend]
+  configuration:
+    facet: kind
+    description: Settings and how each environment provides them.
+    broader: [backend]
+    source: OWASP ASVS 5.0.0 V13 Configuration
+  testing:
+    facet: kind
+    description: Unit and integration tests.
+
+  # Quality concerns that cut across the rest
+  performance:
+    facet: concern
+    description: Speed and efficient use of resources. Async I/O, response size, bundle size.
+    source: ISO/IEC 25010:2023 performance efficiency
+  caching:
+    facet: concern
+    description: Storing results to avoid repeating work. What to cache, for how long, with which keys.
+    broader: [performance]
+  resilience:
+    facet: concern
+    description: Staying up when dependencies fail. Timeouts, retries, circuit breakers.
+    source: ISO/IEC 25010:2023 reliability
+  observability:
+    facet: concern
+    description: Knowing what a running system is doing. Logs, traces, health checks.
+  security:
+    facet: concern
+    description: Protecting systems and data from misuse.
+    source: ISO/IEC 25010:2023 security; OWASP ASVS 5.0.0
+  authentication:
+    facet: concern
+    description: Proving who a caller is. Tokens and their validation.
+    broader: [security]
+    source: OWASP ASVS 5.0.0 V6 Authentication, V9 Self-contained Tokens, V10 OAuth and OIDC
+  authorization:
+    facet: concern
+    description: Deciding what a caller may do or see.
+    broader: [security]
+    source: OWASP ASVS 5.0.0 V8 Authorization
+  input-validation:
+    facet: concern
+    description: Treating input as untrusted. Validation, encoding, injection prevention.
+    broader: [security]
+    source: OWASP ASVS 5.0.0 V1 Encoding and Sanitization, V2 Validation and Business Logic
+  secrets:
+    facet: concern
+    description: Credentials and keys. Where they live and where they must never appear.
+    broader: [security]
+    source: OWASP ASVS 5.0.0 V13 Configuration, V14 Data Protection
+  dependencies:
+    facet: concern
+    description: Third-party packages and where they come from. The software supply chain.
+    broader: [security]
+    source: OWASP Top 10:2025 A03 Software Supply Chain Failures
+
+  # What the code runs on
+  dotnet:
+    facet: runtime
+    description: C# and .NET. Standards for it reach only projects that name this runtime.
+    source: GitHub Linguist (C#)
+    files: ["*.cs", "*.csproj", "*.sln", "*.slnx"]
+  node:
+    facet: runtime
+    description: JavaScript or TypeScript on Node.js servers (Nitro, Express, Next.js server code).
+    source: GitHub Linguist (JavaScript, TypeScript)
+    files: ["package.json"]

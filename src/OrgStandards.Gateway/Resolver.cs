@@ -2,31 +2,79 @@ using OrgStandards.Contracts;
 
 namespace OrgStandards.Gateway;
 
-// Filter validation, the product overlay, and gap reporting. Pure functions, no I/O.
+// Filter validation, the product overlay, exclusions, and gap reporting. Pure functions, no I/O.
 public static class Resolver
 {
+    // In an exclusion, the field that names topics rather than tags.
+    public const string TopicField = "topic";
+
     public static Resolution Resolve(
-        string? id, Dictionary<string, string[]> filter, int index, SourceCall<QueryResult>[] calls)
+        string? id, Dictionary<string, string[]> filter, int index, SourceCall<QueryResult>[] calls,
+        Dictionary<string, string[]>? exclude = null)
     {
+        filter = Filters.Clean(filter);
+        var exclusions = Filters.Clean(exclude);
         var available = calls.Where(call => call.Succeeded && call.Value is not null).ToList();
         var catalog = MergeFields(available.Select(call => call.Value!.Catalog.Fields));
         var sources = calls.Select(call => new SourceStatus(call.Source, call.Succeeded ? "ok" : "unavailable", call.Error)).ToArray();
 
-        var companies = catalog.TryGetValue(StandardFields.Partition, out var known) ? known : [];
-        var unknownFields = UnknownFields(filter, catalog);
-        if (unknownFields.Length > 0 || !Requests(filter, StandardFields.Partition))
+        // Fields can only be checked against what some owner knows. With none answering, nothing is
+        // "unknown": the document reports the outage instead of blaming the filter.
+        var unknownFields = available.Count == 0
+            ? []
+            : UnknownFields(filter, catalog)
+                .Concat(UnknownFields(exclusions, catalog).Where(field => !field.Equals(TopicField, StringComparison.OrdinalIgnoreCase)))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        if (unknownFields.Length > 0)
         {
-            return new Resolution(id, filter, sources, [], [], unknownFields, catalog.Keys.Order().ToArray(), companies, [], []);
+            return new Resolution(id, filter, sources, [], [], unknownFields, catalog.Keys.Order().ToArray(), [], [], []);
         }
 
         var matches = available
             .Where(call => index < call.Value!.Results.Length)
             .SelectMany(call => call.Value!.Results[index].Select(topic => (call.Source, topic)));
 
-        var (topics, conflicts) = Overlay(matches);
+        var (resolved, conflicts) = Overlay(matches);
         var unknownValues = UnknownValues(filter, catalog);
 
-        return new Resolution(id, filter, sources, topics, conflicts, [], [], companies, unknownValues, NotCovered(filter, topics, unknownValues));
+        // Exclusions apply to the final topics. Gaps are judged before them: a value answered only by
+        // an excluded topic was answered, not missing.
+        var excluded = resolved
+            .Select(topic => (Topic: topic, Reason: ExcludedBy(topic.Topic, exclusions)))
+            .Where(pair => pair.Reason is not null)
+            .ToList();
+        var kept = resolved.Except(excluded.Select(pair => pair.Topic)).ToArray();
+
+        return new Resolution(id, filter, sources, kept, conflicts, [], [], unknownValues,
+            NotCovered(filter, resolved, unknownValues),
+            excluded.Select(pair => new ExcludedTopic(pair.Topic.Topic.Topic, pair.Topic.Source, pair.Reason!)).ToArray());
+    }
+
+    // Which exclusion matches a topic ("topic", or "field = values"), or null if none does.
+    private static string? ExcludedBy(StandardTopic topic, Dictionary<string, string[]> exclusions)
+    {
+        foreach (var (field, values) in exclusions)
+        {
+            if (field.Equals(TopicField, StringComparison.OrdinalIgnoreCase))
+            {
+                if (values.Contains(topic.Topic, StringComparer.OrdinalIgnoreCase))
+                {
+                    return TopicField;
+                }
+
+                continue;
+            }
+
+            var own = topic.Tags.FirstOrDefault(tag => tag.Key.Equals(field, StringComparison.OrdinalIgnoreCase)).Value ?? [];
+            var hit = own.Intersect(values, StringComparer.OrdinalIgnoreCase).ToArray();
+            if (hit.Length > 0)
+            {
+                return $"{field} = {string.Join(", ", hit)}";
+            }
+        }
+
+        return null;
     }
 
     public static Dictionary<string, string[]> MergeFields(IEnumerable<Dictionary<string, string[]>> fieldSets) =>
@@ -38,9 +86,6 @@ public static class Resolver
                 group => group.SelectMany(field => field.Value).Distinct(StringComparer.OrdinalIgnoreCase).Order().ToArray(),
                 StringComparer.OrdinalIgnoreCase);
 
-    public static bool Requests(Dictionary<string, string[]> filter, string field) =>
-        filter.Any(entry => entry.Key.Equals(field, StringComparison.OrdinalIgnoreCase) && entry.Value.Length > 0);
-
     public static string[] UnknownFields(Dictionary<string, string[]>? filter, Dictionary<string, string[]> catalog) =>
         (filter ?? []).Keys.Where(field => !catalog.ContainsKey(field)).ToArray();
 
@@ -48,6 +93,7 @@ public static class Resolver
     public static Dictionary<string, Dictionary<string, string[]>> UnknownValues(
         Dictionary<string, string[]> filter, Dictionary<string, string[]> catalog)
     {
+        filter = Filters.Clean(filter);
         var unknown = new Dictionary<string, Dictionary<string, string[]>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var (field, values) in filter)
@@ -134,7 +180,7 @@ public static class Resolver
 
                 if (!answered)
                 {
-                    gaps.Add(field.Equals(StandardFields.Overlay, StringComparison.OrdinalIgnoreCase)
+                    gaps.Add(StandardFields.Qualifiers.Contains(field, StringComparer.OrdinalIgnoreCase)
                         ? $"No {field}-specific standards for {field} = {value}; the general standards below apply."
                         : $"Nothing found for {field} = {value}.");
                 }

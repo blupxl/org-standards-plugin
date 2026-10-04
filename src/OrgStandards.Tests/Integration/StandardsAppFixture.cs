@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using ModelContextProtocol.Client;
@@ -34,9 +35,18 @@ public sealed class StandardsAppFixture : IAsyncLifetime
         await _app.StartAsync(timeout.Token);
 
         // The owners wait for the migrations, so once they're up the standards are loaded.
-        foreach (var resource in new[] { "design", "platform", "gateway", "acme-web" })
+        foreach (var resource in new[] { "design", "platform", "security", "gateway", "acme-web" })
         {
             await _app.ResourceNotifications.WaitForResourceHealthyAsync(resource, timeout.Token);
+        }
+
+        // "Healthy" means each process is up, not that it answers quickly: an owner's first query
+        // (database connection, EF Core's model) can take longer than the gateway's 10-second limit
+        // on a busy machine. Wait until a discovery call gets an answer from every owner, so no test
+        // depends on running first or last.
+        while (!Regex.IsMatch(await CallAsync("list_standards", []), "\"status\"\\s*:\\s*\"ok\""))
+        {
+            await Task.Delay(TimeSpan.FromSeconds(2), timeout.Token);
         }
     }
 

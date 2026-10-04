@@ -13,7 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="seed\**\*.md" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The standards (one folder per owner), the taxonomy, and the golden set for evaluation. -->
+    <None Include="seed\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
