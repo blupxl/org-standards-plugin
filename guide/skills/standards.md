@@ -28,8 +28,12 @@ service, UI code, a page, form, mockup or prototype, or asking which standards a
    fetched with `get_topic`, never reconstructed from memory.
 4. **Has the work checked** by the [standards reviewer](standards-reviewer.md), with the same filters
    and exclusions, and passes on its findings as they are.
-5. **Reports** which standards applied, any SHOULD not followed and why, any gaps the work touched,
-   and the reviewer's result.
+5. **Reports** which standards applied, the decisions it made itself (marking the ones you should
+   confirm), any SHOULD not followed and why, any gaps the work touched, and the reviewer's result.
+6. **Records the work** in a new dated folder, `docs/standards/implementations/<YYYY-MM-DD-HHmm>/`:
+   `implementation.md` for people and `implementation.json` as data, with each review round's
+   failures, fixes and result, and the same finding ids as an [assessment](assess.md). Commit it
+   with the change, and the pull request carries its own standards record.
 
 ## What it won't do
 

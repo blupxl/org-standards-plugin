@@ -174,6 +174,12 @@ the document is instructions, not data: it has to say how far it can be trusted.
   run", never "fixed": reviewers vary between runs, and only the data can tell variance from
   progress. *Rejected:* keeping the report in the console only, which couldn't be compared; and
   one report overwritten each run, which left the history to git.
+- **Implementation work is recorded the same way.** The standards skill writes
+  `docs/standards/implementations/<YYYY-MM-DD-HHmm>/` when it's done: the standards applied, the
+  **decisions it made without asking** (a guessed company name, a skipped SHOULD, a change to
+  template code to meet a rule), each review round, and open questions. Committed with the change,
+  the pull request carries its own standards record. Found when a one-prompt build made sensible
+  but unasked choices that were only visible in the console.
 
 ## What went wrong while building it
 

@@ -80,6 +80,10 @@ so when your work falls into a gap.
   connection strings.
 - If existing code in the repository contradicts a standard, follow the standard in new code and
   point out the existing code. Don't refactor it unless asked.
+- **Keep track of the decisions you make yourself**: anything you chose without asking, such as a
+  name, a default, a library, an assumption about the product or company, or a change to template
+  code to meet a rule. Ask when the choice is the user's to make; otherwise decide, and note it for
+  the record (step 6), marking the ones the user should confirm.
 
 ## 4. Check the work
 
@@ -89,13 +93,70 @@ When the change is done, hand it to the `standards-reviewer` agent with:
 - the list of files you created or changed.
 
 The reviewer fetches the standards itself and checks the files independently. Pass on its findings
-as they are. If it reports a MUST failure, fix it, or explain to the user why it can't be fixed.
+as they are. If it reports a MUST failure, fix it, or explain to the user why it can't be fixed, and
+hand the fixed files back to it. Keep each round's result (failures, fixes, and the final result)
+for the record.
 
 ## 5. Report
 
 End with a short summary:
 
 - which standards applied (topic names, and the product layer if any),
+- the decisions you made yourself, and which need the user's confirmation,
 - any SHOULD you didn't follow, and why,
 - any gaps ("Not covered") the work touched,
-- the reviewer's result.
+- the reviewer's result,
+- where the record is (step 6).
+
+## 6. Record the work
+
+Write a record of what you did with the standards, so it outlives this session and can go into the
+pull request with the change. Write it when the work is done (after the last review round), and
+skip it for questions that changed no files.
+
+Write a new folder, `docs/standards/implementations/<YYYY-MM-DD-HHmm>/` (local time; create the
+folders if needed), and never change an earlier one:
+
+- `implementation.md`, for people:
+
+  ```
+  Standards record: <the task, in a line>
+  Date · commit before the work (git rev-parse --short HEAD, or "not a git repository") · plugin
+  Scope: <per component: kind, runtime, product; from .claude/standards.json or decided, and why>
+  Exclusions: <approved ones from .claude/standards.json, or "none">
+
+  Standards applied: <topic (owner, version, layer)>, grouped by component
+  Decisions made without asking: <decision: why> [confirm] for the ones the user should confirm
+  SHOULD not followed: <topic #n: rule: reason>
+  Gaps: <what the work touched that no standard covers>
+  Review: <round 1: FAIL (n MUST): topic #n: rule. file:line → fix> ... <final: PASS | FAIL>
+  Files: <created or changed>
+  Open questions: <for the user or the architects>
+  ```
+
+- `implementation.json`: the same, as data:
+
+  ```json
+  {
+    "run": "2026-10-04-1530", "commit": "a1b2c3d", "plugin": "acme",
+    "task": "Orders API with order lookup and a paged order history",
+    "scope": [{ "component": "api", "filter": { "kind": ["api", "backend"], "runtime": ["dotnet"] }, "source": "decided" }],
+    "exclusions": [],
+    "applied": [{ "topic": "Settings", "owner": "platform", "version": "1.1", "layer": "general" }],
+    "decisions": [{ "decision": "Named the tracing source Acme.Orders", "why": "Company name taken from the product name", "confirm": true }],
+    "shouldNotFollowed": [{ "id": "api/Caching#1", "rule": "cache read-heavy responses", "reason": "The data comes from an in-memory stub for now" }],
+    "gaps": ["..."],
+    "review": [
+      { "round": 1, "result": "fail", "failures": [{ "id": "api/Settings#2", "rule": "no key strings outside Program.cs", "evidence": ["src/Orders.Api/Program.cs:27"], "fix": "read through a typed options class" }] },
+      { "round": 2, "result": "pass" }
+    ],
+    "files": ["src/Orders.Api/Program.cs"],
+    "questions": ["..."]
+  }
+  ```
+
+  Finding ids are the same as in an assessment, `<component>/<topic>#<n>` with the reviewer's rule
+  numbers, so a later assessment can be lined up with this record.
+
+Tell the user the folder, and that committing it with the change puts the record in the pull
+request.

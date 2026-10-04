@@ -1,6 +1,6 @@
 ---
 title: .NET services
-version: 1.1
+version: 1.2
 runtime: dotnet
 kind: [backend, api, configuration, data-access, testing]
 ---
@@ -14,6 +14,31 @@ kind: [backend, api, configuration, data-access, testing]
   response.
 
 Why: one registration covers every endpoint; a handler written per endpoint misses some.
+
+## OpenAPI in .NET
+<!-- tags: { kind: [api], concern: [documentation], implements: [API description] } -->
+- APIs MUST generate their OpenAPI description with the built-in `Microsoft.AspNetCore.OpenApi`
+  (`builder.Services.AddOpenApi()`, `app.MapOpenApi()`). MUST NOT add Swashbuckle.
+- APIs MUST serve the Scalar API explorer (`Scalar.AspNetCore`, `app.MapScalarApiReference()`), at
+  `/scalar/v1` by default.
+- Both MUST be switched on by a setting (for example `OpenApi:Enabled`), not by checking the
+  environment name (see the Environments standard).
+
+Why: one explorer across every API, built on the description ASP.NET Core generates itself;
+Swashbuckle is no longer part of the templates.
+
+### Example
+```csharp
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+if (app.Configuration.GetValue<bool>("OpenApi:Enabled"))
+{
+    app.MapOpenApi();                 // /openapi/v1.json
+    app.MapScalarApiReference();      // /scalar/v1
+}
+```
 
 ## Settings in .NET
 <!-- tags: { kind: [configuration, backend], implements: [Settings] } -->
