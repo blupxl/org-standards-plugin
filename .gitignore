@@ -16,6 +16,9 @@ TestResults/
 # Local design work, not published
 docs/
 
+# Evaluation reports: outputs, reproducible from the commit each one records
+evaluation/results/
+
 # OS noise
 .DS_Store
 Thumbs.db

@@ -36,10 +36,19 @@ forbidden topics returned and classification, per task and overall. It runs in p
 files: no services, no model, the same result every time. Each report records the commit and a
 fingerprint of the standards and golden set it measured.
 
-**Results:** [`evaluation/results/`](../evaluation/results/). The baseline is today's tag-only
-matching, which finds very little: a task has to name its category to be found. That's the gap
-search is meant to close, and the number to beat. The later reports show what each change to the
-classification did, for example precision doubling when `kind` and `concern` were split.
+The reports are written to `evaluation/results/`, which isn't committed: they're outputs, and any
+of them can be reproduced by checking out the commit it records and running the evaluation again.
+
+**What it has shown so far**, on the placeholder standards:
+
+| Change | Mean recall | Precision |
+|---|---|---|
+| Baseline: tag-only matching, one `categories` field | 6% (14% accepting "did you mean") | 9% (6%) |
+| `categories` split into `kind` and `concern` | 10% (16%) | 19% (10%) |
+
+Tag-only matching finds very little: a task has to name its category to be found. That's the gap
+search is meant to close, and the number to beat. Splitting the facets doubled precision: an API
+question stopped getting browser security rules.
 
 ## Assessments are measured too
 
