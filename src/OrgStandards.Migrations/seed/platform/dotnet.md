@@ -1,6 +1,6 @@
 ---
 title: .NET services
-version: 1.6
+version: 1.7
 runtime: dotnet
 kind: [backend, api, configuration, data-access, testing]
 ---
@@ -41,8 +41,12 @@ Guidelines' general naming conventions.
 - Services MUST register `builder.Services.AddProblemDetails()` and the exception handler
   (`app.UseExceptionHandler()`), so every error, including unhandled ones, is a Problem Details
   response.
+- Bad input found in a handler MUST return `TypedResults.ValidationProblem(errors)`, not
+  `Problem(statusCode: 400)` or `BadRequest("…")`, so it has the same shape as a validation failure.
 
 Why: one registration covers every endpoint; a handler written per endpoint misses some.
+`ValidationProblem` goes through the same Problem Details service as validation, so a `400` from a
+handler gets the same `errors` map, `instance` and `traceId`.
 
 ## OpenAPI in .NET
 <!-- tags: { kind: [api], concern: [documentation], implements: [API description] } -->
@@ -54,6 +58,10 @@ Why: one registration covers every endpoint; a handler written per endpoint miss
 - Every endpoint MUST call `.WithName()`, `.WithSummary()` and `.WithTags()`, and return
   `TypedResults` (or declare `.Produces<T>()` and `.ProducesProblem()`) so every response appears
   in the description.
+- Each status code MUST be declared once. MUST NOT combine `.ProducesValidationProblem()` with
+  `.ProducesProblem(400)`: both describe `400`, and only one of them appears in the description.
+- A `PATCH` endpoint MUST declare its body's media type, `.Accepts<T>("application/merge-patch+json")`,
+  so the description shows the body callers send.
 - The AppHost SHOULD link each API's explorer in the dashboard: `.WithUrl("/scalar/v1", "API
   reference")`.
 - Both MUST be switched on by a setting (for example `OpenApi:Enabled`), not by checking the
@@ -145,23 +153,46 @@ public sealed record PlaceOrderRequest
 ```
 
 ## Resource locations in .NET
-<!-- tags: { kind: [api], concern: [documentation], implements: [Resource locations] } -->
+<!-- tags: { kind: [api], concern: [documentation, security], implements: [Resource locations] } -->
 - Links MUST be built with `LinkGenerator.GetUriByName(httpContext, "<endpoint name>", values)`,
   from the endpoint's name, never by concatenating strings.
+- MUST NOT leave `"AllowedHosts": "*"` in a deployed environment. Each environment MUST list the
+  hosts it serves in `AllowedHosts`, including the host its health probes call.
 - Problem Details MUST set `instance` in one place: `AddProblemDetails` with `CustomizeProblemDetails`.
 - Behind a proxy, MUST use forwarded headers from trusted proxies only, so absolute URLs carry the
-  public host and scheme.
+  public host and scheme. When it forwards `X-Forwarded-Host`, MUST also set
+  `ForwardedHeadersOptions.AllowedHosts` to the public hosts.
 
 Why: endpoint names are already required for the description; the same names make every link
-correct after a route changes.
+correct after a route changes. Links and `instance` are built from the request's `Host` header, so
+with every host allowed, a caller chooses the host in them (host header injection). A request for
+any other host is refused with `400`, so a probe that calls by address fails until its host is listed.
 
 ### Example
+```jsonc
+// The production environment's configuration (or AllowedHosts=... as a variable). The internal
+// name is the one the health probes call.
+{ "AllowedHosts": "api.acme.example;orders-api.internal" }
+```
+
 ```csharp
-// OrderResponse is documented as in Model documentation in .NET; ToResponse maps an order and its
-// own URL.
+// Program.cs
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
     context.ProblemDetails.Instance ??= context.HttpContext.Request.GetEncodedUrl());
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+        | ForwardedHeaders.XForwardedHost;
+    options.AllowedHosts = ["api.acme.example"];
+    // and the trusted proxies: options.KnownIPNetworks / options.KnownProxies
+});
+
+// After builder.Build(), before anything that reads the host or scheme:
+app.UseForwardedHeaders();
+
+// Endpoint handlers. OrderResponse is documented as in Model documentation in .NET; ToResponse
+// maps an order and its own URL.
 static async Task<Results<Ok<OrderResponse>, NotFound>> GetOrder(
     Guid id, OrdersDbContext database, LinkGenerator linkGenerator, HttpContext httpContext,
     CancellationToken cancellationToken)
@@ -183,18 +214,32 @@ static async Task<Created<OrderResponse>> PlaceOrder(PlaceOrderRequest request, 
 
 ## Settings in .NET
 <!-- tags: { kind: [configuration, backend], implements: [Settings] } -->
-- Settings MUST be bound to options classes (`builder.Services.AddOptions<T>().Bind(...)`) and
-  validated with `.ValidateDataAnnotations().ValidateOnStart()`.
-- Code MUST NOT read configuration keys as strings outside `Program.cs`.
+- Groups of related settings MUST be bound to options classes
+  (`builder.Services.AddOptions<T>().Bind(...)`) and validated with
+  `.ValidateDataAnnotations().ValidateOnStart()`.
+- A single on/off switch MAY be read directly, once, with `GetValue<bool>("Section:Enabled")`, or
+  `GetValue("Section:Enabled", defaultValue: true)` when it should be on unless switched off; it
+  needs no options class.
+- Code MUST NOT read configuration keys outside `Program.cs` and the ServiceDefaults project.
 
-Why: `ValidateOnStart` is what makes a bad setting fail the deployment instead of a request.
+Why: `ValidateOnStart` is what makes a bad setting fail the deployment instead of a request. A
+switch is different: missing is a valid state, so its default must be the safe one (off for the API
+explorer, on for health endpoints), and a value that isn't a `bool` throws where it's read, at
+startup. An options class for one `bool` adds nothing.
 
 ### Example
 ```csharp
+// Program.cs
 builder.Services.AddOptions<PricingOptions>()
     .Bind(builder.Configuration.GetSection("Pricing"))
     .ValidateDataAnnotations()
     .ValidateOnStart();
+
+// Off unless switched on.
+if (app.Configuration.GetValue<bool>("OpenApi:Enabled"))
+{
+    app.MapOpenApi();
+}
 ```
 
 ## EF Core

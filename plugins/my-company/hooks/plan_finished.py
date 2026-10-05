@@ -34,6 +34,7 @@ MAX_PAUSES = 3
 PLAN_MODE = "plan mode"
 CHECKBOX = re.compile(r"^([ \t]*(?:[-*+]|\d+[.)])[ \t]+)\[[ xX]\]", re.MULTILINE)
 FILE_TOOLS = {"Write", "Edit", "MultiEdit"}
+PLAN_FOLDERS = {"plans", "specs"}
 
 FILE_REASON = (
     "This plan hasn't been checked against the company's standards: {path}. Before implementing it, "
@@ -69,11 +70,13 @@ def is_checked(text: str) -> bool:
 
 
 def is_plan_file(path: str) -> bool:
-    """Markdown under a folder named plans, except plan mode's own (.claude/plans)."""
+    """Markdown under a folder named plans or specs (a spec can hold the plan too), except plan
+    mode's own (.claude/plans)."""
     parts = [part.lower() for part in PurePosixPath(path.replace("\\", "/")).parts]
-    if not parts or not parts[-1].endswith(".md") or "plans" not in parts[:-1]:
+    folders = parts[:-1]
+    if not parts or not parts[-1].endswith(".md") or not PLAN_FOLDERS & set(folders):
         return False
-    folder = len(parts) - 2 - parts[:-1][::-1].index("plans")
+    folder = max(index for index, part in enumerate(folders) if part in PLAN_FOLDERS)
     return not (folder > 0 and parts[folder - 1] == ".claude")
 
 

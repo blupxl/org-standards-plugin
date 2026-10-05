@@ -22,22 +22,28 @@ service, UI code, a page, form, mockup or prototype, or asking which standards a
    out so every concern applies. It uses only fields and values `list_standards` returns.
 2. **Starts new work from a recipe.** When the task starts a project or adds a capability (data
    access, messaging, …), it asks what the work needs, lists the architects' approved
-   [recipes](../templates.md) with the recommended one first, follows the chosen one, and records
-   the choice in `.claude/standards.json`.
+   [recipes](../templates.md) with the recommended one first (as headlines: names, owners, what
+   each adds), fetches and follows the chosen one, and records the choice in
+   `.claude/standards.json`.
 3. **Gets the standards** in one `get_standards` call, one request per component, each with its own
    kind and concern, and the project's exclusions. It reads each document's header first: an
    incomplete or unresolved answer is reported, not ignored.
 4. **Follows them.** MUST and MUST NOT are requirements: if one can't be met, it stops and says why.
    SHOULD is the default; a deviation needs a stated reason. Details such as exact color tokens are
-   fetched with `get_topic`, never reconstructed from memory.
+   fetched with `get_topic`, never reconstructed from memory, and only when a topic says it has
+   more: rules already in the document aren't fetched again.
 5. **Has the work checked** by the [standards reviewer](standards-reviewer.md), with the same filters
-   and exclusions, and passes on its findings as they are.
+   and exclusions, and passes on its findings as they are. The review starts as soon as the code is
+   done, before the docs are written, and gets only source, configuration and test files. A
+   follow-up round gets the same filters, the previous report and the files changed since.
 6. **Reports** which standards applied, the decisions it made itself (marking the ones you should
    confirm), any SHOULD not followed and why, any gaps the work touched, and the reviewer's result.
-7. **Records the work** in a new dated folder, `docs/standards/implementations/<YYYY-MM-DD-HHmm>/`:
-   `implementation.md` for people and `implementation.json` as data, with each review round's
-   failures, fixes and result, and the same finding ids as an [assessment](assess.md). Commit it
-   with the change, and the pull request carries its own standards record.
+7. **Records the work** in one file, `implementation.json`, in a new dated folder,
+   `docs/standards/implementations/<YYYY-MM-DD-HHmm>/`. It records what happened: the scope, the
+   standards applied, the decisions, any SHOULD not followed, gaps, and each review round's
+   failures, fixes and result, with the same finding ids as an [assessment](assess.md). For the
+   design it points to the checked plan or spec instead of restating it. Commit it with the change,
+   and the pull request carries its own standards record.
 
 ## What it won't do
 

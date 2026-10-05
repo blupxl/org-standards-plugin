@@ -52,7 +52,8 @@ The reasoning behind each decision is in [design-notes.md](design-notes.md).
 > connects Claude Code to the services, which you run from your IDE so you can step through them.
 > It ships with example standards that show the format. It has no authentication and filters in
 > memory; what a production deployment would need is listed in
-> [design-notes.md](design-notes.md#what-a-production-version-would-need).
+> [design-notes.md](design-notes.md#what-a-production-version-would-need), and what we measured
+> and plan next in [Known gaps and next revision](design-notes.md#known-gaps-and-next-revision).
 
 ## Quick start
 

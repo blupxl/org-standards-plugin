@@ -1,6 +1,6 @@
 ---
 title: Service recipes
-version: 1.4
+version: 1.5
 template: recipe
 runtime: dotnet
 kind: [api, backend]
@@ -27,9 +27,11 @@ in .NET, Resource locations in .NET, Service defaults in .NET, Health endpoints,
 - MUST register Problem Details and the exception handler, and the OpenAPI document and Scalar
   at their default addresses (`/openapi/v1.json`, `/scalar/v1`), switched on by the
   `OpenApi:Enabled` setting, and link the explorer in the AppHost's dashboard.
-- The ServiceDefaults template maps its health endpoints only in Development and reads
-  `OTEL_EXPORTER_OTLP_ENDPOINT` as a string. Both MUST be changed: map the endpoints whenever
-  `Health:Enabled` is set, and let the OpenTelemetry exporter read its own setting.
+- MUST keep the ServiceDefaults template's exporter condition: add the OTLP exporter only when
+  `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
+- The template maps its health endpoints only in Development. MUST change `MapDefaultEndpoints` to
+  map them unless `Health:Enabled` is set to false, reading the switch itself with a default of
+  on, so no service has to set it and none loses its health endpoints by leaving it out.
 
 Why: one shape for every API, already meeting the standards that every API is checked against.
 
@@ -41,6 +43,7 @@ Why: one shape for every API, already meeting the standards that every API is ch
 
 ### Wiring
 ```csharp
+// The API's Program.cs
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
@@ -61,10 +64,36 @@ var orders = app.MapGroup("/v1/orders").WithTags("Orders");
 orders.MapGet("/{id:guid}", GetOrder).WithName("GetOrder").WithSummary("Gets one order");
 orders.MapPost("/", PlaceOrder).WithName("PlaceOrder").WithSummary("Places an order");
 
-// AppHost: the explorer's link in the dashboard
-builder.AddProject<Projects.Orders_Api>("orders-api").WithUrl("/scalar/v1", "API reference");
-
 app.Run();
+```
+
+```csharp
+// The AppHost's Program.cs: the explorer's link in the dashboard
+builder.AddProject<Projects.Orders_Api>("orders-api").WithUrl("/scalar/v1", "API reference");
+```
+
+### ServiceDefaults
+```csharp
+// ServiceDefaults/Extensions.cs, in AddOpenTelemetryExporters. Kept from the template: the
+// exporter only when an endpoint is configured.
+var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+if (useOtlpExporter)
+{
+    builder.Services.AddOpenTelemetry().UseOtlpExporter();
+}
+
+// ServiceDefaults/Extensions.cs. Changed: health endpoints are on unless Health:Enabled is false,
+// read here, not from the environment name.
+public static WebApplication MapDefaultEndpoints(this WebApplication app)
+{
+    if (app.Configuration.GetValue("Health:Enabled", defaultValue: true))
+    {
+        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/alive", new HealthCheckOptions { Predicate = check => check.Tags.Contains("live") });
+    }
+
+    return app;
+}
 ```
 
 ## Recipe: Controller-based API

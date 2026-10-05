@@ -298,6 +298,37 @@ apply:
 In that run the repository declared no product, so the implementer inferred the website product
 from the ticket and said so. A website repository should declare it, so nothing is inferred.
 
+A third run built a new API from one prompt (a reading list on .NET, Aspire and PostgreSQL). It
+took 53 minutes, 48 of them working; about 19½ were the plugin's own steps (standards, plan check,
+review, record). The trace showed where: a plan check that recommended keeping a rule break (which
+the reviewer then failed, forcing a second loop), a reviewer that read generated files and
+refetched everything in round two, a 30 KB document fetched just to list recipes, a plan check that
+fetched nearly every topic one by one, and the implementation record written twice. All five are
+addressed in the plugin's instructions; the run hasn't been repeated yet to measure the effect. An independent review of the app it built also traced several defects to our own standards
+(links built from the request's Host header, a route invented to avoid a verb, read-change-save
+state updates); the standards now say how to avoid them.
+
+## Known gaps and next revision
+
+What's measured and not yet done, in the order we'd take it:
+
+- **Headlines first in the standards skill.** The plan check and review now load only what a
+  change touches, but the standards skill still loads each touched component's whole document into
+  the main session, where it is re-read on every later call (about 17K tokens over about 99 calls
+  in the run above). The fix is the plan check's pattern: headlines, then only the topics the
+  change touches.
+- **Measure an everyday change.** The 53-minute run was a new project, the worst case: every topic
+  applies and every file is new. The cost of a small change to an existing project hasn't been
+  measured yet; it's the next run.
+- **Plan mode's hook input is confirmed only headless.** The hook reads both possible fields of
+  `ExitPlanMode`'s input to be safe; one interactive check settles it.
+- **Not enforced by tests.** That the plan check never recommends breaking a MUST, and the "about
+  10 topics" point at which it fetches once instead of topic by topic, are instructions to the
+  model. A plan-check golden set (plans with known gaps) would measure both.
+- **Owner policy, left as it is.** The example recipes make every API an Aspire project with a
+  separate migration service, even a small one. That's a choice for the standards' owners, not
+  the plugin.
+
 ## What a production version would need
 
 **Quality**

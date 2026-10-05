@@ -64,7 +64,7 @@ each of its topics names the general topic it says how to meet:
 ```markdown
 ## Settings in .NET
 <!-- tags: { kind: [configuration, backend], implements: [Settings] } -->
-- Settings MUST be bound to options classes and validated with `.ValidateOnStart()`.
+- Groups of related settings MUST be bound to options classes and validated with `.ValidateOnStart()`.
 ```
 
 A runtime document reaches only projects that name its runtime, and a failure of both the general

@@ -1,6 +1,6 @@
 ---
 title: API security
-version: 1.0
+version: 1.1
 kind: [api, backend]
 concern: [security, authentication, authorization, input-validation]
 ---
@@ -41,6 +41,34 @@ common API breach.
 - Identifiers, sizes and counts from the caller MUST be range-checked before use.
 
 Why: everything that arrives from a caller is untrusted, including from our own front end.
+
+## Request limits
+<!-- tags: { concern: [security, input-validation] } -->
+- Request bodies MUST be capped at what the API needs (an order is a few kilobytes), lower than the
+  server's default, for the whole server or per endpoint. *(CWE-770 Allocation of Resources Without
+  Limits or Throttling)*
+- Where one caller could fill the store (carts, saved addresses, drafts), SHOULD cap how many items
+  each caller may keep.
+
+Why: the server's default lets every request send about 30 MB, so leaving it is not a limit. A store
+without per-caller limits grows until a single caller fills it.
+
+### Example (.NET)
+```csharp
+// Program.cs
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 64 * 1024);
+
+// A tighter limit for one endpoint
+orders.MapPost("/", PlaceOrder).WithMetadata(new RequestSizeLimitAttribute(16 * 1024));
+
+// A body over the limit returns 413 for a bound model. Where code reads the body itself, the
+// exception handler needs to keep that status instead of turning it into a 500:
+app.UseExceptionHandler(new ExceptionHandlerOptions
+{
+    StatusCodeSelector = exception => exception is BadHttpRequestException badRequest
+        ? badRequest.StatusCode : StatusCodes.Status500InternalServerError,
+});
+```
 
 ## Output encoding
 - Data MUST be encoded for the context it goes into: HTML, URLs, SQL (parameters), shell, logs.

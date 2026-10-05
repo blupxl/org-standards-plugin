@@ -1,6 +1,6 @@
 ---
 title: API security recipes
-version: 1.2
+version: 1.3
 template: recipe
 runtime: dotnet
 kind: [api, backend]
@@ -20,11 +20,15 @@ Authorization.
   by default; public endpoints opt out with `AllowAnonymous()` and a comment saying why.
 - MUST check permissions with named policies (one per scope, `orders.read`), and check that the
   caller may act on the specific resource inside the handler.
+- MUST key a caller's data by issuer plus subject (`iss` + `sub`), or by the provider's documented
+  stable id (Microsoft Entra: `tid` + `oid` when data is shared across services), never `sub` alone.
 
-Why: with a fallback policy, forgetting an attribute fails closed instead of open.
+Why: with a fallback policy, forgetting an attribute fails closed instead of open. A subject is
+unique only within its issuer, so `sub` alone can match another issuer's user.
 
 ### Wiring
 ```csharp
+// Program.cs
 builder.Services.AddAuthentication().AddJwtBearer(options => options.MapInboundClaims = false);
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
@@ -32,6 +36,10 @@ builder.Services.AddAuthorizationBuilder()
         context.User.FindFirst("scp")?.Value.Split(' ').Contains("orders.read") == true));
 
 v1.MapGet("/orders/{id:guid}", GetOrder).RequireAuthorization("orders.read");
+
+// In a handler, which takes the caller as a ClaimsPrincipal parameter (user). The owner of the
+// caller's data, stored as two columns, owner_issuer and owner_subject.
+var owner = (Issuer: user.FindFirstValue("iss")!, Subject: user.FindFirstValue("sub")!);
 ```
 
 ### Configuration

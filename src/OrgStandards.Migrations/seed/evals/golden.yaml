@@ -220,6 +220,22 @@ tasks:
     scope: { runtime: [dotnet] }
     categories: [api, documentation]
     expect: [API description, OpenAPI in .NET]
+  - task: Links in our responses point at the wrong host
+    scope: { runtime: [dotnet] }
+    categories: [api, security]
+    expect: [Resource locations in .NET]
+  - task: Our OpenAPI shows the wrong 400 response
+    scope: { runtime: [dotnet] }
+    categories: [api, documentation]
+    expect: [OpenAPI in .NET]
+
+  # Changing state safely
+  - task: Mark an order as shipped
+    categories: [api, data-access]
+    expect: [Routes and versioning, Concurrent changes]
+  - task: A retried POST created the same order twice
+    categories: [api, resilience, data-access]
+    expect: [Idempotent creates, Concurrent changes]
 
   # Patterns and the technology behind them
   - task: Add an OrderPlaced event to the orders aggregate

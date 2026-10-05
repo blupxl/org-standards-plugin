@@ -1,6 +1,6 @@
 ---
 title: API design
-version: 1.4
+version: 1.5
 kind: [api, backend]
 ---
 <!-- PLACEHOLDER standards that exercise the format. Replace with real ones. -->
@@ -8,16 +8,36 @@ kind: [api, backend]
 ## Routes and versioning
 - Routes MUST be nouns in plural kebab case (`/customer-orders/{id}`), versioned in the path
   (`/v1/...`).
+- A change of state SHOULD be a `PATCH` on the resource (`PATCH /v1/orders/{id}` with
+  `{"status": "Shipped"}`). An operation with side effects beyond the resource's own fields
+  (cancelling with a refund, resending a receipt) MAY be a `POST` to an action
+  (`POST /v1/orders/{id}/cancel`).
+- MUST NOT invent a resource only to avoid a verb (`POST /orders/{id}/shipments` with nothing to
+  fetch there).
 - Breaking changes MUST go to a new version; the previous version MUST keep working for at least
   six months after the new one ships.
 
-Why: callers upgrade on their own schedule; a path version makes the contract explicit.
+Why: callers upgrade on their own schedule; a path version makes the contract explicit. A state is
+a field of the resource, so changing it is changing the resource; a made-up resource is a contract
+nobody can read back.
+
+### Example
+```http
+PATCH /v1/orders/0f8fad5b-d9cb-469f-a165-70867728950e
+Content-Type: application/merge-patch+json
+
+{ "status": "Shipped" }
+```
+Returns `200` with the updated order, or `409` when its current state doesn't allow the change
+(shipping a cancelled order).
 
 ## Errors
 - Error responses MUST use Problem Details (RFC 9457).
 - MUST NOT return stack traces or exception messages to callers.
 - MUST use the matching status code: `400` invalid input, `401` no or bad credentials, `403` not
   allowed, `404` not found, `409` conflict.
+- Every `400` MUST have the same Problem Details shape, with an `errors` map from field to
+  messages, whether validation or a check in the handler found the bad input.
 
 Why: one error shape lets every client handle errors the same way.
 
@@ -28,9 +48,33 @@ Why: one error shape lets every client handle errors the same way.
   "title": "Order not found",
   "status": 404,
   "detail": "No order 1042 for this customer.",
+  "instance": "https://api.acme.example/v1/orders/1042",
   "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
 }
 ```
+
+### Example: 400
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "instance": "https://api.acme.example/v1/orders",
+  "errors": { "sku": ["No product MUG-PURPLE in the catalog."] },
+  "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+}
+```
+
+## Idempotent creates
+<!-- tags: { concern: [resilience] } -->
+- Creates SHOULD accept an `Idempotency-Key` header (an IETF draft): a retried `POST` with the same
+  key from the same caller returns the first result instead of creating a duplicate. The same key
+  with a different body is refused with `422`. A client-generated id does the same job (see
+  Concurrent changes).
+
+Why: networks drop responses, not only requests. A client that retries a `POST` without a key
+can place the same order twice. Keys are scoped to the caller so one caller's key can't return
+another's result.
 
 ## API description
 <!-- tags: { concern: [documentation] } -->

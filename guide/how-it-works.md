@@ -55,9 +55,10 @@ never hard-code where anything lives, and the gateway just passes the answer alo
 
 A small hook on the developer's machine notices when a plan is finished and asks for the
 [plan check](skills/plan-check.md), once for each version of the plan. The hook makes no network
-calls. The check classifies the plan, asks `get_standards` for headlines, fetches only the topics
-the plan's steps touch, and proposes changes you approve. Only filters and topic names reach the
-gateway.
+calls. The check takes the agreed scope (classifying only what the plan adds beyond it), asks
+`get_standards` for headlines, fetches only the topics the plan's steps touch (or the whole
+document in one call, when most topics apply), and proposes changes you approve. Only filters and
+topic names reach the gateway.
 
 ## The document
 

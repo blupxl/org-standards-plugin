@@ -27,6 +27,12 @@ For a plan file, run the hook with `--begin "<file>"`, so it stays quiet while y
 ## 2. Check
 
 Run the `plan-checker` agent with the plan (path, or text in plan mode) and the project folder.
+When the filter and exclusions are already agreed (from `.claude/standards.json`, or the standards
+skill earlier in this session), pass them too: the agent uses them as they are, and classifies
+only what the plan adds beyond them.
+
+If the plan was written from a spec that already ends with a current check marker, pass the
+agent that spec's path too, and tell it to check only the plan steps the spec doesn't cover.
 
 If the agent fails or times out, its reply has no JSON or malformed JSON, or its status is anything
 but `complete` or `partial` (including `unavailable`), treat the check as unavailable: tell the user
@@ -42,7 +48,8 @@ summary says).
 
 Ask the report's `questions` with your question tool, a few at a time, the recommended option first.
 A recipe is an option, not a rule, until it's chosen. If an answer picks a recipe, fetch it with
-`get_topic` and adjust the proposed changes to it. If the plan takes another approach the standards
+`get_topic`, the component's filter with `template: ["recipe"]` added, and the same exclusions, and
+adjust the proposed changes to it. If the plan takes another approach the standards
 allow, leave it as it is.
 
 ## 4. Approve

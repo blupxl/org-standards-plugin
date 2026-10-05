@@ -90,8 +90,27 @@ class PlanFinishedTests(unittest.TestCase):
         other.write_text("hello", encoding="utf-8")
         self.assertIsNone(self.decide(self.written(other)))
 
+    def test_a_spec_that_holds_the_plan_pauses(self):
+        spec = self.folder / "repo" / "docs" / "superpowers" / "specs" / "2026-10-05-customer-cache-design.md"
+        spec.parent.mkdir(parents=True)
+        spec.write_text(PLAN, encoding="utf-8")
+        self.assertEqual("block", self.decide(self.written(spec))["decision"])
+
+    def test_a_stamped_spec_passes(self):
+        spec = self.folder / "repo" / "docs" / "superpowers" / "specs" / "2026-10-05-customer-cache-design.md"
+        spec.parent.mkdir(parents=True)
+        spec.write_text(PLAN, encoding="utf-8")
+        subprocess.run([sys.executable, str(HOOK), "--stamp", str(spec)], check=True,
+                       env={**os.environ, "ACME_PLAN_CHECK_NOTES": str(self.notes)})
+        self.assertIsNone(self.decide(self.written(spec)))
+
     def test_plan_mode_files_are_left_to_exit_plan_mode(self):
         self.assertFalse(plan_finished.is_plan_file(str(Path.home() / ".claude" / "plans" / "brave-otter.md")))
+        self.assertFalse(plan_finished.is_plan_file(str(Path.home() / ".claude" / "specs" / "x.md")))
+
+    def test_only_markdown_under_specs_counts(self):
+        self.assertTrue(plan_finished.is_plan_file(r"C:\repo\docs\superpowers\specs\x.md"))
+        self.assertFalse(plan_finished.is_plan_file(r"C:\repo\docs\superpowers\specs\x.txt"))
 
     def test_windows_paths_are_plans_too(self):
         self.assertTrue(plan_finished.is_plan_file(r"C:\repo\docs\superpowers\plans\x.md"))
