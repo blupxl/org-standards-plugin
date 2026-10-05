@@ -1,0 +1,11 @@
+{
+  "name": "stock-service",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/server.js",
+  "dependencies": {
+    "express": "^5.0.0",
+    "ioredis": "^5.4.1",
+    "mongodb": "^6.10.0"
+  }
+}

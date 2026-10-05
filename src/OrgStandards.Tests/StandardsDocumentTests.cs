@@ -60,6 +60,17 @@ public class StandardsDocumentTests
     }
 
     [Fact]
+    public void A_recommended_recipe_says_so()
+    {
+        var recommended = Topic("Recipe: EF Core with PostgreSQL") with
+        {
+            Tags = Map(("template", ["recipe"]), ("recommended", ["yes"])),
+        };
+
+        Assert.Contains("· recommended by the owners", Render(NoFilter, Answer("data", [recommended])));
+    }
+
+    [Fact]
     public void A_runtime_topic_says_which_general_rule_it_implements()
     {
         var document = Render(NoFilter, Answer("platform", [Topic("Settings in .NET", implements: ["Settings"])]));
@@ -143,5 +154,139 @@ public class StandardsDocumentTests
         var document = StandardsDocument.RenderTopic(resolution, "Fonts");
 
         Assert.Contains("no topic \"Fonts\" under this scope. Topics available: Colors, Components.", document);
+    }
+
+    private static string Headlines(params StandardTopic[] topics) =>
+        StandardsDocument.Render(Resolver.Resolve(null, NoFilter, 0, [Answer("platform", topics)]), headlines: true);
+
+    [Fact]
+    public void Headlines_show_each_topic_with_its_first_rule_only()
+    {
+        var document = Headlines(Topic("Timeouts", body: "- MUST set a timeout.\n- MUST NOT retry forever.",
+            details: [new TopicDetail("Example", "code")]));
+
+        Assert.Contains("> **Headlines only:**", document);
+        Assert.Contains("## Timeouts", document);
+        Assert.Contains("- MUST set a timeout.", document);
+        Assert.DoesNotContain("MUST NOT retry forever", document);
+        Assert.DoesNotContain("More in this topic", document);
+    }
+
+    [Fact]
+    public void A_headline_skips_blank_lines_and_comments()
+    {
+        var document = Headlines(Topic("Timeouts", body: "\n\n<!-- placeholder -->\n- MUST set a timeout.\n- MUST log it."));
+
+        Assert.Contains("- MUST set a timeout.", document);
+        Assert.DoesNotContain("placeholder", document);
+        Assert.DoesNotContain("MUST log it", document);
+    }
+
+    [Fact]
+    public void A_topic_with_an_empty_body_is_a_heading_only()
+    {
+        var document = Headlines(Topic("Timeouts", body: ""));
+
+        Assert.Contains("## Timeouts", document);
+    }
+
+    [Fact]
+    public void Recipe_headlines_keep_their_markers()
+    {
+        var recipe = new StandardTopic("Recipe: Distributed cache with Redis", "Service recipes", "1.3", "How a service caches data.",
+            [], Map(("template", ["recipe"]), ("recommended", ["yes"]), ("adds", ["redis"])));
+
+        var document = Headlines(recipe);
+
+        Assert.Contains("recommended by the owners", document);
+        Assert.Contains("adds: redis", document);
+    }
+
+    private static Resolution Resolution(string[]? addedKinds = null, bool ancestryUnavailable = false) =>
+        Resolver.Resolve(null, NoFilter, 0, [Answer("design", [Topic("Colors")])],
+            addedKinds: addedKinds, ancestryUnavailable: ancestryUnavailable);
+
+    private const string AlsoApplies = "> **Also applies:** css, styling, presentation (broader kinds of the requested kind).";
+    private const string AncestryWarning = "> ⚠ The taxonomy is unavailable, so broader kinds weren't added. Standards for them may be missing.";
+
+    [Fact]
+    public void Broader_kinds_that_were_added_are_named_in_the_envelope()
+    {
+        var resolution = Resolution(addedKinds: ["css", "styling", "presentation"]);
+
+        Assert.Contains(AlsoApplies, StandardsDocument.Render(resolution));
+        Assert.Contains(AlsoApplies, StandardsDocument.RenderTopic(resolution, "Colors"));
+    }
+
+    [Fact]
+    public void An_unavailable_taxonomy_is_one_line_in_the_envelope()
+    {
+        var resolution = Resolution(ancestryUnavailable: true);
+
+        Assert.Contains(AncestryWarning, StandardsDocument.Render(resolution));
+        Assert.Contains(AncestryWarning, StandardsDocument.RenderTopic(resolution, "Colors"));
+    }
+
+    [Fact]
+    public void Without_ancestry_the_envelope_has_neither_line()
+    {
+        var resolution = Resolution();
+
+        foreach (var document in new[] { StandardsDocument.Render(resolution), StandardsDocument.RenderTopic(resolution, "Colors") })
+        {
+            Assert.DoesNotContain("Also applies", document);
+            Assert.DoesNotContain("taxonomy is unavailable", document);
+        }
+    }
+
+    private static TaxonomyCategory Category(string name, params string[] broader) =>
+        new(name, "kind", $"{name}, described.", broader, null, [], []);
+
+    private static TaxonomyResult Taxonomy(string status, params TaxonomyCategory[] categories) =>
+        new(status, categories, [], []);
+
+    [Fact]
+    public void A_kind_filter_is_broadened_with_the_taxonomy()
+    {
+        var taxonomy = Taxonomy("ok", Category("presentation"), Category("css", "presentation"));
+
+        var (filter, unavailable) = Resolver.Broaden(Map(("kind", ["css"])), taxonomy);
+
+        Assert.Equal(["css", "presentation"], filter["kind"]);
+        Assert.False(unavailable);
+    }
+
+    [Fact]
+    public void With_the_taxonomy_unavailable_the_filter_is_sent_as_requested_and_the_gap_is_flagged()
+    {
+        var (filter, unavailable) = Resolver.Broaden(Map(("kind", ["css"])), Taxonomy("unavailable"));
+
+        Assert.Equal(["css"], filter["kind"]);
+        Assert.True(unavailable);
+    }
+
+    [Fact]
+    public void A_filter_without_a_kind_has_nothing_to_warn_about_when_the_taxonomy_is_unavailable()
+    {
+        var (_, unavailable) = Resolver.Broaden(Map(("concern", ["caching"])), Taxonomy("unavailable"));
+
+        Assert.False(unavailable);
+    }
+
+    [Fact]
+    public void Only_a_request_with_a_kind_needs_the_taxonomy()
+    {
+        Assert.True(Resolver.NeedsTaxonomy([Map(("concern", ["caching"])), Map(("kind", ["css"]))]));
+        Assert.False(Resolver.NeedsTaxonomy([Map(("concern", ["caching"])), Map(("runtime", ["node"]))]));
+        Assert.False(Resolver.NeedsTaxonomy([]));
+    }
+
+    [Fact]
+    public void Without_a_taxonomy_the_filter_is_sent_as_requested_with_nothing_to_warn_about()
+    {
+        var (filter, unavailable) = Resolver.Broaden(Map(("concern", ["caching"])), null);
+
+        Assert.Equal(["caching"], filter["concern"]);
+        Assert.False(unavailable);
     }
 }

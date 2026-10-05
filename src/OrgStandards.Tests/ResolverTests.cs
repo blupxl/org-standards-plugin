@@ -37,8 +37,8 @@ public class ResolverTests
         ]);
 
         var caching = Assert.Single(topics);
-        Assert.Equal(["Tokens", "Example"], caching.Topic.Details.Select(d => d.Title));
-        Assert.Equal("product tokens", caching.Topic.Details.Single(d => d.Title == "Tokens").Markdown);
+        Assert.Equal(["Tokens", "Example"], caching.Topic.Details.Select(detail => detail.Title));
+        Assert.Equal("product tokens", caching.Topic.Details.Single(detail => detail.Title == "Tokens").Markdown);
         Assert.Equal(["Example"], caching.InheritedDetails);
     }
 
@@ -51,7 +51,7 @@ public class ResolverTests
             ("platform", Topic("Caching")),
         ]);
 
-        Assert.Equal(["design", "platform"], topics.Select(t => t.Source));
+        Assert.Equal(["design", "platform"], topics.Select(topic => topic.Source));
         var conflict = Assert.Single(conflicts);
         Assert.Contains("design", conflict);
         Assert.Contains("platform", conflict);
@@ -81,7 +81,7 @@ public class ResolverTests
         var resolution = Resolver.Resolve(null, Map(), 0,
             [Answer("design", [Topic("Colors", technology: ["ui"])])]);
 
-        Assert.Equal(["Colors"], resolution.Topics.Select(t => t.Topic.Topic));
+        Assert.Equal(["Colors"], resolution.Topics.Select(topic => topic.Topic.Topic));
         Assert.Empty(resolution.UnknownFields);
     }
 
@@ -95,7 +95,7 @@ public class ResolverTests
         ]);
 
         Assert.Equal([("design", "Colors"), ("platform", "Timeouts")],
-            resolution.Topics.Select(t => (t.Source, t.Topic.Topic)));
+            resolution.Topics.Select(topic => (topic.Source, topic.Topic.Topic)));
     }
 
     [Fact]
@@ -115,6 +115,6 @@ public class ResolverTests
             [Answer("design", [Topic("Colors")]), Unavailable("platform")]);
 
         Assert.Single(resolution.Topics);
-        Assert.Equal("unavailable", resolution.Sources.Single(s => s.Name == "platform").Status);
+        Assert.Equal("unavailable", resolution.Sources.Single(source => source.Name == "platform").Status);
     }
 }

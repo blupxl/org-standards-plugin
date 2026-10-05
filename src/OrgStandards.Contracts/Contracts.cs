@@ -7,6 +7,9 @@ namespace OrgStandards.Contracts;
 
 public static class StandardFields
 {
+    // What the code is (api, css, react, ...). The only facet whose values expand to their ancestors (Ancestry).
+    public const string Kind = "kind";
+
     // The field that layers specific topics over general ones.
     // With it in the filter, general topics (no product tag) come back as the base layer and a
     // product topic with the same name replaces them. Without it, only general topics come back.
@@ -16,10 +19,28 @@ public static class StandardFields
     // runtime; a topic with one applies only when the request names that runtime.
     public const string Runtime = "runtime";
 
+    // What a component depends on (postgres, sqlserver, mongodb, redis, ...). Like runtime: a topic
+    // without it applies to everything; a topic with it applies only when the request names it.
+    public const string Uses = "uses";
+
+    // The architecture a component follows (ddd, cqrs, event-sourcing, ...). Like uses: a topic
+    // without it applies to everything; a topic with it applies only when the request names it.
+    public const string Pattern = "pattern";
+
     // Fields that qualify a topic instead of classifying it: a topic tagged with one applies only
     // when the request asks for one of its values, and a topic without it applies to every request.
     // Product also layers (see Overlay).
-    public static readonly string[] Qualifiers = [Overlay, Runtime];
+    // Marks a recipe: an approved way to add a capability (template: recipe). Recipes never come back
+    // with the rules; only when a request asks for template: recipe.
+    public const string Template = "template";
+
+    // On a recipe: the one the owners recommend among the approved options.
+    public const string Recommended = "recommended";
+
+    // On a recipe: what following it adds to the component's uses (for example ef-core).
+    public const string Adds = "adds";
+
+    public static readonly string[] Qualifiers = [Overlay, Runtime, Uses, Pattern, Template];
 
     // On a runtime's topic: the general topics it says how to meet ("Settings in .NET" implements
     // "Settings"). Shown with the topic, so a reviewer reports one failure, not two.
@@ -81,3 +102,17 @@ public sealed record DescribeResult(SourceCatalog Catalog, Dictionary<string, st
 
 // Results[i] holds the topics matching the i-th filter of the request.
 public sealed record QueryResult(SourceCatalog Catalog, List<StandardTopic>[] Results);
+
+// One category of the owners' taxonomy (get_taxonomy). Facet is the filter field it's used in
+// (kind, concern, runtime, uses or pattern); Files and Signals are the evidence that indicates it.
+public sealed record TaxonomyCategory(
+    string Name,
+    string Facet,
+    string Description,
+    string[] Broader,
+    string? Source,
+    string[] Files,
+    string[] Signals);
+
+// The categories one owner serves. An owner that doesn't own the taxonomy serves none.
+public sealed record TaxonomyListing(string Source, TaxonomyCategory[] Categories);

@@ -38,7 +38,13 @@ public sealed record Resolution(
     string[] ValidFields,
     Dictionary<string, Dictionary<string, string[]>> UnknownValues,
     string[] NotCovered,
-    ExcludedTopic[] Excluded);
+    ExcludedTopic[] Excluded,
+    string[]? AddedKinds = null,
+    bool AncestryUnavailable = false);
 
 // A topic left out by the project's exclusions. Reason says which exclusion matched it.
 public sealed record ExcludedTopic(string Topic, string Source, string Reason);
+
+// get_taxonomy's answer: the merged categories, which owners answered, and any category two owners
+// file under different facets.
+public sealed record TaxonomyResult(string Status, TaxonomyCategory[] Categories, SourceStatus[] Sources, string[] Conflicts);

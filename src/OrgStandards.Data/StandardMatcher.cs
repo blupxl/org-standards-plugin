@@ -45,29 +45,29 @@ public static class StandardMatcher
         topic.Body,
         topic.Details.ToArray(),
         topic.Tags
-            .GroupBy(t => t.Field, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.Select(t => t.Value).ToArray(), StringComparer.OrdinalIgnoreCase));
+            .GroupBy(tag => tag.Field, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.Select(tag => tag.Value).ToArray(), StringComparer.OrdinalIgnoreCase));
 
     // Small, hand-written data: load everything and filter in memory.
-    public static async Task<List<StandardTopic>> LoadAllAsync(StandardsDbContext db, CancellationToken cancellationToken) =>
-        (await db.Topics.AsNoTracking().Include(t => t.Tags).OrderBy(t => t.Id).ToListAsync(cancellationToken))
+    public static async Task<List<StandardTopic>> LoadAllAsync(StandardsDbContext database, CancellationToken cancellationToken) =>
+        (await database.Topics.AsNoTracking().Include(topic => topic.Tags).OrderBy(topic => topic.Id).ToListAsync(cancellationToken))
             .Select(ToContract)
             .ToList();
 
     public static Dictionary<string, string[]> FieldsOf(IEnumerable<StandardTopic> topics) =>
         topics
-            .SelectMany(t => t.Tags)
-            .GroupBy(t => t.Key, StringComparer.OrdinalIgnoreCase)
+            .SelectMany(topic => topic.Tags)
+            .GroupBy(tag => tag.Key, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
-                g => g.Key,
-                g => g.SelectMany(t => t.Value).Distinct(StringComparer.OrdinalIgnoreCase).Order().ToArray(),
+                group => group.Key,
+                group => group.SelectMany(tag => tag.Value).Distinct(StringComparer.OrdinalIgnoreCase).Order().ToArray(),
                 StringComparer.OrdinalIgnoreCase);
 
     private static bool IsQualifier(string field) =>
         StandardFields.Qualifiers.Contains(field, StringComparer.OrdinalIgnoreCase);
 
     private static string[] ValuesOf(IReadOnlyDictionary<string, string[]>? map, string field) =>
-        map?.FirstOrDefault(kv => kv.Key.Equals(field, StringComparison.OrdinalIgnoreCase)).Value ?? [];
+        map?.FirstOrDefault(entry => entry.Key.Equals(field, StringComparison.OrdinalIgnoreCase)).Value ?? [];
 
     private static bool Overlaps(string[] left, string[] right) =>
         left.Intersect(right, StringComparer.OrdinalIgnoreCase).Any();

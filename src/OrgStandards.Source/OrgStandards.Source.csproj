@@ -16,4 +16,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- The taxonomy, kept with the standards; served only by the owner the AppHost names. -->
+    <None Include="..\OrgStandards.Migrations\seed\taxonomy.yaml" Link="taxonomy.yaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

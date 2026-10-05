@@ -66,6 +66,41 @@ public class StandardMatcherTests
     public void Discovery_shows_runtime_topics_without_a_runtime() =>
         Assert.True(StandardMatcher.Matches(DotnetTopic, Map(), discovery: true));
 
+    private static readonly Dictionary<string, string[]> PostgresTopic =
+        Map(("uses", ["postgres"]), ("kind", ["data-access"]));
+
+    [Fact]
+    public void A_dependency_topic_applies_only_when_the_dependency_is_named()
+    {
+        Assert.False(StandardMatcher.Matches(PostgresTopic, Map(("kind", ["data-access"]))));
+        Assert.False(StandardMatcher.Matches(PostgresTopic, Map(("kind", ["data-access"]), ("uses", ["sqlserver"]))));
+        Assert.True(StandardMatcher.Matches(PostgresTopic, Map(("kind", ["data-access"]), ("uses", ["sqlserver", "postgres"]))));
+    }
+
+    [Fact]
+    public void A_topic_without_dependencies_applies_whatever_is_used() =>
+        Assert.True(StandardMatcher.Matches(UiTopic, Map(("technology", ["ui"]), ("uses", ["mongodb"]))));
+
+    [Fact]
+    public void A_pattern_and_a_dependency_both_qualify_a_topic()
+    {
+        var eventuousTopic = Map(("pattern", ["event-sourcing"]), ("uses", ["eventuous"]), ("kind", ["backend"]));
+
+        Assert.False(StandardMatcher.Matches(eventuousTopic, Map(("kind", ["backend"]), ("pattern", ["event-sourcing"]))));
+        Assert.False(StandardMatcher.Matches(eventuousTopic, Map(("kind", ["backend"]), ("uses", ["eventuous"]))));
+        Assert.True(StandardMatcher.Matches(eventuousTopic,
+            Map(("kind", ["backend"]), ("pattern", ["event-sourcing"]), ("uses", ["eventuous", "kafka"]))));
+    }
+
+    [Fact]
+    public void Recipes_come_back_only_when_asked_for()
+    {
+        var recipe = Map(("template", ["recipe"]), ("kind", ["data-access"]), ("uses", ["postgres", "ef-core"]));
+
+        Assert.False(StandardMatcher.Matches(recipe, Map(("kind", ["data-access"]), ("uses", ["postgres"]))));
+        Assert.True(StandardMatcher.Matches(recipe, Map(("template", ["recipe"]), ("kind", ["data-access"]), ("uses", ["postgres"]))));
+    }
+
     [Fact]
     public void Fields_and_values_ignore_case() =>
         Assert.True(StandardMatcher.Matches(UiTopic, Map(("Technology", ["UI"]))));

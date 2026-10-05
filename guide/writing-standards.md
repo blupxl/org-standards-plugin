@@ -15,6 +15,8 @@ concern: [branding]               # what it must achieve (optional). Every other
                                   # too: a value or a list, and filterable.
 product: xyz-public-app           # only for product-specific documents
 runtime: dotnet                   # only for runtime-specific documents (dotnet, node)
+uses: postgres                    # only for documents about a dependency (postgres, kafka, ...)
+pattern: event-sourcing           # only for documents about an architecture (ddd, cqrs, ...)
 ---
 
 ## Colors                         <- a topic. The name is what product documents override.
@@ -80,9 +82,43 @@ tokens, GitHub Linguist).
 | **kind**: what the code is | `api`, `backend`, `frontend`, `css`, `sass`, `react`, `data-access`, `testing` | `kind:` |
 | **concern**: what it must achieve | `security`, `authorization`, `performance`, `caching`, `accessibility`, `ux`, `branding` | `concern:` |
 | **runtime**: what it runs on | `dotnet`, `node` | `runtime:` |
+| **uses**: what it depends on | `postgres`, `sqlserver`, `mongodb`, `redis`, `kafka`, `eventuous` | `uses:` |
+| **pattern**: the architecture it follows | `ddd`, `cqrs`, `event-sourcing` | `pattern:` |
+
+The gateway takes the taxonomy from one owner, set by `Gateway:TaxonomyOwner` (the demo's AppHost sets it to `platform`). Another owner that serves categories is reported as a conflict and ignored. With no owner set, every owner's categories are merged, and a category two owners define differently is a conflict.
 
 The taxonomy is meant to grow. Tests keep it honest: every category a standard uses must be in the
 taxonomy under its facet, and every category in the taxonomy must be used by at least one standard.
+
+## What `broader` means
+
+`broader` on a kind says "is a kind of". Every rule for the parent applies to the child. `sass` is
+under `css`, and `css` is under `styling`, so a request for `sass` also gets the `css` and `styling`
+rules. The gateway follows the chain to the top, so tag a standard with the most general kind it
+fits and it reaches every narrower kind.
+
+- **Concerns don't expand.** `accessibility` is under `ux`, but a request for `accessibility` does
+  not get `ux` rules. A standard about both carries both: `concern: [accessibility, ux]`.
+- **Qualifiers have no `broader`.** `runtime`, `uses` and `pattern` only narrow a request.
+- **Not every parent is a real parent.** `ui` is not above `styling`, because it means a different
+  thing in a web page, a Windows form and a service. Add `broader` only when the parent's rules
+  always hold for the child.
+
+Tests check that the chains have no cycles, that only kind and concern use `broader`, and that a
+narrower concern carries its parents.
+
+## Dependencies and patterns
+
+Standards about a technology (`uses: postgres`) or an architecture (`pattern: event-sourcing`)
+reach only components that name it, like runtimes. They layer: an event-sourced .NET component on
+Eventuous gets the general rules, the event-sourcing rules, and the Eventuous rules, and the
+Eventuous topics `implements` the event-sourcing ones they say how to meet. The demo's dependency
+standards belong to the **data** owner; the pattern standards to **platform**.
+
+## Recipes
+
+Owners also write **recipes**: approved ways to add a capability, with packages, wiring and
+examples. They're documents marked `template: recipe`; see [Templates and recipes](templates.md).
 
 ## Add a standards owner
 

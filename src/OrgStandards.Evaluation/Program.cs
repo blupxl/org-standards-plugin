@@ -1,10 +1,13 @@
+using OrgStandards.Data;
 using OrgStandards.Evaluation;
 
 // Measures how well each retrieval strategy finds the standards for the golden set's tasks, and
 // writes a report per strategy plus a side-by-side comparison. Runs in process on the seed files:
-// no services, no containers, no model calls, so it's free and gives the same result every time.
+// no services, no containers, and (by default) no model calls, so it's free and gives the same result every time.
 //
-//   dotnet run --project src/OrgStandards.Evaluation -- [--strategy <name>] [--out <folder>]
+//   dotnet run --project src/OrgStandards.Evaluation -- [--strategy <name>] [--out <folder>] [--plugin-dir <folder>]
+// The classifier strategy calls Claude Code once per task: it runs only with --strategy classifier
+// and --plugin-dir, with the services running.
 //
 // Default: every strategy, reports in evaluation/results/ under the current folder.
 
@@ -13,14 +16,25 @@ var output = Option("--out") ?? Path.Combine("evaluation", "results");
 var seed = Option("--seed") ?? Path.Combine(AppContext.BaseDirectory, "seed");
 
 var taxonomy = Taxonomy.Load(Path.Combine(seed, "taxonomy.yaml"));
-var strategies = new IRetrievalStrategy[] { new TagStrategy(taxonomy, acceptSuggestions: false), new TagStrategy(taxonomy, acceptSuggestions: true) };
+var pluginDirectory = Option("--plugin-dir");
+var strategies = new List<IRetrievalStrategy> { new TagStrategy(taxonomy, acceptSuggestions: false), new TagStrategy(taxonomy, acceptSuggestions: true) };
+if (string.Equals(strategyName, "classifier", StringComparison.OrdinalIgnoreCase))
+{
+    if (pluginDirectory is null)
+    {
+        Console.Error.WriteLine("The classifier strategy needs --plugin-dir <the plugin folder>, and the services running.");
+        return 1;
+    }
+
+    strategies.Add(new ClassifierStrategy(new ClaudeClassifier(pluginDirectory), taxonomy));
+}
 
 var selected = strategyName is null
-    ? strategies
-    : strategies.Where(s => s.Name.Equals(strategyName, StringComparison.OrdinalIgnoreCase)).ToArray();
+    ? strategies.ToArray()
+    : strategies.Where(candidate => candidate.Name.Equals(strategyName, StringComparison.OrdinalIgnoreCase)).ToArray();
 if (selected.Length == 0)
 {
-    Console.Error.WriteLine($"Unknown strategy \"{strategyName}\". Strategies: {string.Join(", ", strategies.Select(s => s.Name))}.");
+    Console.Error.WriteLine($"Unknown strategy \"{strategyName}\". Strategies: {string.Join(", ", strategies.Select(candidate => candidate.Name))}.");
     return 1;
 }
 
@@ -39,9 +53,9 @@ foreach (var strategy in selected)
     File.WriteAllText(path + ".json", Report.ToJson(report));
     File.WriteAllText(path + ".md", Report.ToMarkdown(report));
 
-    var s = report.Summary;
-    Console.WriteLine($"{strategy.Name,-14} recall {s.MeanRecall:P0} · found all {s.FoundAllRate:P0} · " +
-                      $"returned nothing {s.ReturnedNothing}/{s.Tasks} · precision {s.MeanPrecision:P0} → {path}.md");
+    var summary = report.Summary;
+    Console.WriteLine($"{strategy.Name,-14} recall {summary.MeanRecall:P0} · found all {summary.FoundAllRate:P0} · " +
+                      $"returned nothing {summary.ReturnedNothing}/{summary.Tasks} · precision {summary.MeanPrecision:P0} → {path}.md");
 }
 
 if (reports.Count > 1)

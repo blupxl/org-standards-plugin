@@ -22,9 +22,15 @@ The task, if one was given: $ARGUMENTS
 
 ## 1. Work out the scope
 
-If the repository has `.claude/standards.json` (set by the architects), start from its `scope`,
-and narrow or extend it for the task. (Older repositories declare the scope in `.claude/CLAUDE.md`
-instead.) Otherwise, decide what the work is for:
+If the repository has `.claude/standards.json` (written by the init skill, kept by the
+architects), start from it: for each component the task touches (`components`, matched by path),
+use that component's `scope` plus the file's `product`, and narrow or extend it for the task. When
+the task may add something the declared scope doesn't list (a new dependency, runtime or pattern),
+follow the classify skill for the task's components and compare. A file with a single `scope`
+applies it to the whole repository. (Older repositories declare the scope in
+`.claude/CLAUDE.md` instead.) Without one, suggest running the init skill, then work out the scope by following the classify
+skill for this task: it returns the filter to use, with evidence, and the questions to ask. The
+fields it fills in mean:
 
 - **product**: which product this is. Look at the repository name, README and solution/project
   names. If it isn't clear, ask the user. Don't guess a product.
@@ -36,9 +42,16 @@ instead.) Otherwise, decide what the work is for:
   question ("the security rules for this API").
 - **runtime**: what the code runs on (`dotnet` for C#/.NET, `node` for JavaScript or TypeScript
   servers). Name it whenever the work has one: standards written for a runtime come back only when
-  it's named, and standards without one always apply. Tell it from the files (`*.csproj` means
-  `dotnet`; a `package.json` with server code means `node`); if a component's runtime isn't clear,
-  ask.
+  it's named, and standards without one always apply. The classify skill says how to tell it from
+  the files; if a component's runtime isn't clear, ask.
+- **uses** and **pattern**: what the component depends on (`postgres`, `kafka`, `eventuous`, …) and
+  the architecture it follows (`ddd`, `cqrs`, `event-sourcing`). Like runtime, standards written
+  for one come back only when it's named, so name every one the component has. They're in
+  `.claude/standards.json`; without it, follow the classify skill to infer them, and ask about
+  anything it can't settle rather than guess.
+  When `.claude/standards.json` exists but the task adds something it doesn't list (a new
+  dependency), the classify skill reports it as a difference: include it in this task's filter and
+  offer to record it, as in step 4 of "New work: a new project, or a new capability" below.
 
 **Exclusions** come only from the `exclude` list in `.claude/standards.json`. Each entry names a
 field and values (or `topic` and topic names) and a `reason`. Pass them to `get_standards` as the
@@ -48,6 +61,25 @@ working: say that exclusions are the architects' decision, made in `.claude/stan
 
 Call `list_standards` first and use only field names and values it returns. If the product the
 user named isn't listed, say so and ask. Don't substitute a close match without confirmation.
+
+### New work: a new project, or a new capability
+
+When the task starts a project, or adds a capability a component doesn't have yet (data access,
+messaging, …), use the owners' **recipes**: approved ways to add it, with packages, wiring,
+configuration and examples. You don't need to be asked; this is part of building to the standards.
+
+1. **Ask what the work needs**, a few questions at a time, with your best guess first: for example
+   "Will it read or write a database?", then "Which one?" Use only values `list_standards` returns.
+2. **List the approved recipes**: `get_standards` with
+   `{ "template": ["recipe"], "kind": [...], "runtime": [...], "uses": [<the answers>] }`. Each
+   recipe says what it adds (`adds: ef-core`), and one is marked **recommended by the owners**.
+3. **Let the user choose**, the recommended recipe first. Another approved recipe is fine; anything
+   not listed isn't approved. Then fetch the chosen one with `get_topic` (its packages, wiring and
+   example) and follow it.
+4. **Record the choice** in `.claude/standards.json`: add the recipe's `adds` and the answers to the
+   component's `uses` (for example `["postgres", "ef-core"]`). Without the file, write it as the
+   init skill would (description, components, scopes), after showing it to the user. Planning and
+   other agents read this file, so the decision is known before anything else is built.
 
 ## 2. Get the standards
 

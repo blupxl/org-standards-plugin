@@ -1,6 +1,6 @@
 ---
 title: Data access
-version: 1.1
+version: 1.2
 kind: [data-access, backend]
 ---
 <!-- PLACEHOLDER standards that exercise the format. Replace with real ones. -->
@@ -23,10 +23,10 @@ injection.
 
 ### Example (.NET)
 ```csharp
-var orders = await db.Orders
+var orders = await database.Orders
     .AsNoTracking()
-    .Where(o => o.CustomerId == customerId)
-    .Select(o => new OrderSummary(o.Id, o.Total, o.Lines.Count))
+    .Where(order => order.CustomerId == customerId)
+    .Select(order => new OrderSummary(order.Id, order.Total, order.Lines.Count))
     .ToListAsync(cancellationToken);
 ```
 

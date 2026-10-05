@@ -1,0 +1,11 @@
+{
+  "name": "storefront-server",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "dependencies": {
+    "express": "^5.0.0",
+    "kafkajs": "^2.2.4",
+    "pg": "^8.13.0"
+  }
+}

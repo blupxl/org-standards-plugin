@@ -1,8 +1,10 @@
 {
-  "$comment": "Set by the architects. scope: the filter Claude starts from. exclude: standards this project is allowed to leave out, each with its reason. Claude uses these as written and never adds exclusions of its own.",
-  "scope": {
-    "kind": ["ui", "css", "styling"],
-    "runtime": ["dotnet"]
-  },
+  "$comment": "Set up with the init skill (or by hand from this template); maintained by the project's architects. Claude reads it and never adds exclusions of its own.",
+  "description": "What this project is and does, in a sentence or two.",
+  "product": [],
+  "components": [
+    { "name": "api", "path": "src/Api", "scope": { "kind": ["api", "backend"], "runtime": ["dotnet"], "uses": [], "pattern": [] } },
+    { "name": "web", "path": "web", "scope": { "kind": ["frontend", "ui", "css"] } }
+  ],
   "exclude": []
 }

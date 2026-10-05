@@ -1,0 +1,9 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: dev-only
+  broker:
+    image: confluentinc/cp-kafka:7.6.0
+  # cache:
+  #   image: redis:7

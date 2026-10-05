@@ -22,6 +22,9 @@ public sealed class SourceClient(
 
     public string[] Sources => configuration.GetSection("Gateway:Sources").Get<string[]>() ?? [];
 
+    // The one owner whose taxonomy is used (set by the AppHost); none means every owner's is merged.
+    public string? TaxonomyOwner => configuration["Gateway:TaxonomyOwner"];
+
     public Task<SourceCall<T>[]> CallAllAsync<T>(string tool, IReadOnlyDictionary<string, object?> arguments, CancellationToken cancellationToken) =>
         Task.WhenAll(Sources.Select(source => CallAsync<T>(source, tool, arguments, cancellationToken)));
 
@@ -56,9 +59,9 @@ public sealed class SourceClient(
 
             return new SourceCall<T>(source, JsonSerializer.Deserialize<T>(text, Json.Options), null);
         }
-        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
         {
-            var reason = timeout.IsCancellationRequested ? $"timed out after {Timeout.TotalSeconds:0}s" : ex.Message;
+            var reason = timeout.IsCancellationRequested ? $"timed out after {Timeout.TotalSeconds:0}s" : exception.Message;
             return new SourceCall<T>(source, default, reason);
         }
     }

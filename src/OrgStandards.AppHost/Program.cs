@@ -18,7 +18,10 @@ var links = new Dictionary<string, (string Name, IResourceBuilder<ProjectResourc
 
 // The downstream MCP servers that own the standards: the fan-out chain.
 // To add one, add its name here and a folder of standards at OrgStandards.Migrations/seed/<name>/.
-string[] sources = ["design", "platform", "security"];
+string[] sources = ["design", "platform", "security", "data"];
+
+// The owner that serves the taxonomy (the architecture group's): get_taxonomy reads it from here.
+const string TaxonomyOwner = "platform";
 
 var migrations = builder.AddProject<Projects.OrgStandards_Migrations>("migrations")
     .WaitFor(postgres);
@@ -26,7 +29,8 @@ var migrations = builder.AddProject<Projects.OrgStandards_Migrations>("migration
 // Claude Code connects here: http://localhost:5480/mcp (fixed in the gateway's launchSettings.json).
 // Its home page, http://localhost:5480/, is the "Getting started" guide that F5 opens.
 var gateway = builder.AddProject<Projects.OrgStandards_Gateway>("gateway")
-    .WithUrlForEndpoint("http", url => url.DisplayText = "Getting started");
+    .WithUrlForEndpoint("http", url => url.DisplayText = "Getting started")
+    .WithEnvironment("Gateway__TaxonomyOwner", TaxonomyOwner);
 
 for (var i = 0; i < sources.Length; i++)
 {
@@ -42,6 +46,7 @@ for (var i = 0; i < sources.Length; i++)
         .WithHttpEndpoint()
         .WithReference(database)
         .WithEnvironment("Source__Name", name)
+        .WithEnvironment("Source__ServesTaxonomy", (name == TaxonomyOwner).ToString())
         // Without a launch profile, pass the environment on ourselves, and skip IDE add-ins
         // (e.g. Visual Studio's endpoint discovery) that can't load outside their launch profile.
         .WithEnvironment("ASPNETCORE_ENVIRONMENT", builder.Environment.EnvironmentName)

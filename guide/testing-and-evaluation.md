@@ -5,19 +5,25 @@
 ```bash
 dotnet test src/OrgStandards.Tests                                  # everything
 dotnet test src/OrgStandards.Tests --filter "Category!=Integration"  # unit tests only, no Docker
+python -m unittest discover -s tests/hooks -v                        # the plan hook's tests
 ```
 
-- **Unit tests** (76) check the rules the gateway applies: which topics a filter selects, the
-  product overlay and inherited details, runtimes, exclusions, "did you mean" suggestions, input
-  cleaning, the document header, the Markdown parser, and link resolution. They also check the seed
+- **Unit tests** (114) check the rules the gateway applies: which topics a filter selects, the
+  product overlay and inherited details, the qualifiers (runtimes, dependencies, patterns),
+  exclusions, "did you mean" suggestions, input cleaning, the document header, the Markdown parser,
+  and link resolution. They also check the seed
   data: every category used is in the taxonomy, every taxonomy category is used, every `implements`
   link names a real topic, and the golden set points at standards that exist. They need nothing
   running and take well under a second.
-- **Integration tests** (6) start the whole AppHost inside the test run, with Postgres in a
+- **Integration tests** (8) start the whole AppHost inside the test run, with Postgres in a
   container and randomized ports, so they don't clash with a running copy. They call the gateway
   over MCP, the way Claude Code does, and wait until every owner answers before the first test.
   They need a container runtime and are skipped, not failed, without one. The first run pulls the
-  Postgres image.
+  Postgres image. Run them without `--artifacts-path`: the test run starts each service from its
+  own `bin/` folder.
+- **Hook tests** (28) check the plan hook with Python's `unittest`: which files and events count as
+  a finished plan, the marker line, the once-per-version rule, Windows paths and line endings, and
+  that any error means silence. They need only Python.
 
 ## Measure retrieval
 
@@ -49,6 +55,24 @@ of them can be reproduced by checking out the commit it records and running the 
 Tag-only matching finds very little: a task has to name its category to be found. That's the gap
 search is meant to close, and the number to beat. Splitting the facets doubled precision: an API
 question stopped getting browser security rules.
+
+## Measure the classifier
+
+The [classify skill](skills/classify.md) can be scored on the same golden set:
+
+```bash
+dotnet run --project src/OrgStandards.Evaluation -- --strategy classifier --plugin-dir ../plugins/my-company
+```
+
+Unlike the default strategies, this one needs the services running, because the classifier calls
+`get_taxonomy`. It also needs Claude Code, and it makes one model call per task, so it costs money
+and the result can vary between runs. That's why it runs only when asked, never by default.
+
+The harness starts `claude` as an executable on the PATH, so it needs the native install; an npm
+install's `claude.cmd` isn't found. It runs each call in an empty temporary folder, so no project's
+`CLAUDE.md` or settings change the result. It allows only the plugin's taxonomy tools, named after
+the plugin folder (`mcp__plugin_my-company_standards__get_taxonomy` for `plugins/my-company`), so a
+renamed folder needs no change.
 
 ## Assessments are measured too
 

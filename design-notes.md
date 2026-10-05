@@ -125,6 +125,21 @@ the document is instructions, not data: it has to say how far it can be trusted.
   the same name replaces the general one, and says what it replaced. Details are inherited by title,
   so a product that restates a rule keeps the general example unless it provides its own. Without
   a product filter, only general topics apply.
+- **`broader` means "is a kind of", and only kinds expand.** Every rule for a parent applies to
+  its child, so the gateway adds a kind's ancestors, to the root, to each request. Concerns don't
+  expand: a standard about both accessibility and ux carries both tags. Qualifiers have no
+  ancestry. `api` and `data-access` stay under `backend`, since an API is a backend. `ui` is not an
+  ancestor, because it means a web page, a Windows form or a service depending on the project;
+  `styling` and `website` no longer name it. The response says which kinds were added but not why.
+  *Rejected:* a "via css" explanation per rule (more text for the agent to read, little gain), and
+  expanding one level only (a rule for `styling` would miss `sass`).
+- **Exact evidence stays with Claude, because the measurement found no problem.** A reviewer
+  suggested moving exact signal matching (packages, images, Aspire calls, file patterns) into a
+  script. Before building one, the classifier ran three times on each of five invented projects
+  (`tests/fixtures/`, frozen at one commit), scored only on exact evidence: 465 scored pairs, 0
+  misses, 0 claims of evidence that wasn't there, 0 differences between runs, and none of the 13
+  decoys (commented-out packages, near-miss names) counted. About $0.30 a run. So no matcher was
+  built; the fixtures stay, to repeat the check if the taxonomy or the classifier changes.
 - The same topic defined by two owners in the same layer is returned twice and flagged as a
   conflict, never silently picked.
 - `list_standards` is discovery. It shows every field, product and value, and its output becomes
@@ -174,6 +189,54 @@ the document is instructions, not data: it has to say how far it can be trusted.
   run", never "fixed": reviewers vary between runs, and only the data can tell variance from
   progress. *Rejected:* keeping the report in the console only, which couldn't be compared; and
   one report overwritten each run, which left the history to git.
+- **Dependencies and patterns qualify, like runtimes.** `uses` (`postgres`, `kafka`, `eventuous`,
+  …) and `pattern` (`ddd`, `cqrs`, `event-sourcing`) are facets too: a standard about one reaches
+  only components that name it, and they layer (general → pattern → technology, with `implements`
+  links between the last two). Patterns are kept apart from dependencies because one pattern can
+  run on different technologies: event sourcing on Eventuous or on Kafka shares the pattern's rules.
+  `init` suggests both from facts (packages, Aspire resources, code structure), and the user
+  confirms; nothing is implied on the server.
+- **New work starts from recipes, and every agent sees the decisions.** Owners write recipes
+  (`template: recipe`): approved ways to add a capability, one topic per option, one marked
+  recommended, each saying what it adds (`adds: ef-core`). The standards skill infers when work is
+  new, asks what it needs, offers the approved recipes, follows the chosen one, and records the
+  choice in `.claude/standards.json`, so the rules for that choice apply from then on. The
+  gateway's server instructions tell every agent in the session, planning skills from other
+  plugins included, to read that file and fetch standards and recipes before planning. *Rejected:*
+  a separate command for new projects (Claude already consults the standards when it creates one);
+  and a recipe's framework in `uses`, which matched any recipe sharing the framework.
+- **Responses say where they live, using published conventions only.** Every resource carries an
+  absolute `self` URL; a page carries `self`, `next` and `items`; a create returns `201` with
+  `Location` (RFC 9110); Problem Details set `instance` (RFC 9457). In .NET, links come from
+  `LinkGenerator` and endpoint names, the same names that become each operation's `operationId`,
+  so one `.WithName()` serves the link and the documentation. Every API serves its description at
+  `/openapi/v1.json` and Scalar at `/scalar/v1`, the defaults, so a developer always knows where
+  the docs are. *Rejected:* envelopes such as HAL or JSON:API, which reshape every payload (Zalando's
+  guidelines dropped HAL for that reason); and Azure's `value`/`nextLink`, which leaves no room for
+  `self`.
+- **One set of model metadata drives validation and documentation.** Models carry XML summaries,
+  a realistic `<example>`, and the data annotations ASP.NET Core's OpenAPI generator reads
+  (`[Required]`, `[Range]`, `[MinLength]`, `[MaxLength]`, `[RegularExpression]`, `[DefaultValue]`),
+  which `AddValidation()` also enforces, so the explorer shows exactly what the API accepts, with
+  real-looking data. Found while writing the rule: `[StringLength]`, `[EmailAddress]` and `[Url]`
+  validate but don't reach the description, so the validation recipe now uses the mapped ones.
+- **Names say what things are.** C# follows Microsoft's naming conventions, in whole words: no
+  `Dto` suffix and no shortened variables. An API takes a `<Operation>Request` and returns a
+  `<Thing>Response` (`PlaceOrderRequest` in, `OrderResponse` out). Every example in the standards
+  and recipes was renamed to match, since agents copy examples more faithfully than rules.
+- **Plans are checked before they're built, on the developer's machine.** A local hook notices a
+  finished plan (plan mode, or a Markdown file under a `plans` folder) and asks for the plan check
+  once per version of the plan; it makes no network calls. The check classifies the plan, fetches
+  only the standards its steps touch (headlines first), and proposes changes the developer approves,
+  which rewrite the plan's steps in place. Only filters and topic names reach the server, which
+  keeps no state, so moving it to a central host is a URL change. Classification is one skill used
+  by every caller, with the taxonomy served by its owner and scored on the golden set.
+- **A project is described once, by `init`.** It scans the project (what it does, its components,
+  their kinds and runtimes, the likely product), confirms each answer through a short
+  questionnaire with the scan's answer as the default (or accepts them all in `auto` mode, marked
+  as assumed), and writes `.claude/standards.json` and a marked section of `.claude/CLAUDE.md`.
+  Scopes are **per component**, because one repository can hold a .NET API and a JavaScript front
+  end, and one merged scope would give each the other's rules.
 - **Implementation work is recorded the same way.** The standards skill writes
   `docs/standards/implementations/<YYYY-MM-DD-HHmm>/` when it's done: the standards applied, the
   **decisions it made without asking** (a guessed company name, a skipped SHOULD, a change to

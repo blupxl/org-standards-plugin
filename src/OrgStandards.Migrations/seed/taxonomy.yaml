@@ -5,16 +5,30 @@
 #
 #   facet        kind: what the code or work is (api, css, react, ...),
 #                concern: what it must achieve (security, performance, accessibility, ...), or
-#                runtime: what the code runs on (dotnet, node).
+#                runtime: what the code runs on (dotnet, node), or
+#                uses: what a component depends on (postgres, kafka, eventuous, ...), or
+#                pattern: the architecture it follows (ddd, cqrs, event-sourcing).
 #                Standards and filters use one field per facet. Values within a field are
 #                alternatives (OR); kind and concern narrow each other (AND), so
 #                { kind: [api], concern: [security] } is API security, not browser security.
-#                runtime qualifies instead: a standard without one applies to every runtime, and
-#                one written for a runtime applies only when the request names that runtime.
+#                runtime, uses and pattern qualify instead: a standard without one applies to
+#                every project, and one written for a runtime, a dependency or a pattern applies
+#                only when the request names it.
 #   description  what the category covers (later: embedded, to match tasks to categories)
-#   broader      more general categories it belongs to, in the same facet (sass is css is styling)
+#   broader      the categories this one is a kind of, in the same facet. Kind and concern use it;
+#                only kind expands with it (a concern never does, see below).
+#                Every rule for the parent applies to the child, so a request for sass also
+#                gets the css and styling rules, all the way up the chain (sass, css, styling).
+#                Do not list a parent whose meaning changes with the project, like ui: a web
+#                page, a Windows form and a service each mean something different by it.
+#                A concern never expands: accessibility is under ux, but a request for it does
+#                not get ux rules, so tag a standard with both concerns when both apply.
+#                Qualifiers (runtime, uses, pattern) have no broader.
+#                Tests check that the chains have no cycles, that only kind and concern have
+#                broader, and that a narrower concern carries its parents.
 #   source       where the category comes from, when a published standard defines it
 #   files        file patterns that indicate it, when there are any
+#   signals      packages, Aspire resources or container images that indicate a dependency
 
 categories:
   # What users see and how it feels
@@ -40,7 +54,6 @@ categories:
   styling:
     facet: kind
     description: Visual presentation. Color, spacing, typography, layout.
-    broader: [ui]
   css:
     facet: kind
     description: Cascading Style Sheets.
@@ -65,7 +78,6 @@ categories:
   website:
     facet: kind
     description: The company's public marketing website.
-    broader: [ui]
 
   # Code that runs in the browser
   frontend:
@@ -161,3 +173,51 @@ categories:
     description: JavaScript or TypeScript on Node.js servers (Nitro, Express, Next.js server code).
     source: GitHub Linguist (JavaScript, TypeScript)
     files: ["package.json"]
+
+  # What a component depends on
+  postgres:
+    facet: uses
+    description: PostgreSQL databases.
+    signals: ["Npgsql*", "pg (npm)", "AddPostgres(", "postgres:* (image)"]
+  sqlserver:
+    facet: uses
+    description: Microsoft SQL Server and Azure SQL databases.
+    signals: ["Microsoft.Data.SqlClient", "Microsoft.EntityFrameworkCore.SqlServer", "mssql (npm)", "AddSqlServer("]
+  mongodb:
+    facet: uses
+    description: MongoDB document databases.
+    signals: ["MongoDB.Driver", "mongodb (npm)", "AddMongoDB(", "mongo:* (image)"]
+  redis:
+    facet: uses
+    description: Redis, used as a cache or for short-lived shared state.
+    signals: ["StackExchange.Redis", "ioredis / redis (npm)", "AddRedis(", "redis:* (image)"]
+  kafka:
+    facet: uses
+    description: Apache Kafka, for events and messages between services.
+    signals: ["Confluent.Kafka", "kafkajs (npm)", "AddKafka(", "confluentinc/cp-kafka (image)"]
+  ef-core:
+    facet: uses
+    description: Entity Framework Core, the .NET object-relational mapper.
+    signals: ["Microsoft.EntityFrameworkCore*", "Npgsql.EntityFrameworkCore.PostgreSQL", "Aspire.*.EntityFrameworkCore.*"]
+  dapper:
+    facet: uses
+    description: Dapper, the .NET micro-ORM for hand-written SQL.
+    signals: ["Dapper"]
+  eventuous:
+    facet: uses
+    description: Eventuous, the .NET library for event-sourced aggregates and subscriptions.
+    signals: ["Eventuous*"]
+
+  # The architecture a component follows
+  ddd:
+    facet: pattern
+    description: Domain-driven design. Aggregates, a ubiquitous language, bounded contexts.
+    source: Eric Evans, Domain-Driven Design (2003)
+  cqrs:
+    facet: pattern
+    description: Command and query responsibility segregation. Separate paths for changing and reading state.
+    source: Greg Young; Martin Fowler, "CQRS"
+  event-sourcing:
+    facet: pattern
+    description: State stored as the sequence of events that produced it.
+    source: Martin Fowler, "Event Sourcing"

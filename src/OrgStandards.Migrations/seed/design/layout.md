@@ -1,6 +1,6 @@
 ---
 title: Layout
-version: 1.1
+version: 1.2
 kind: [layout, css, styling, ui]
 ---
 <!-- PLACEHOLDER standards that exercise the format. Replace with real ones. -->
@@ -32,7 +32,7 @@ Why: a shared scale is what makes separately built pages look like one product.
 Why: one set of breakpoints means components switch layout together.
 
 ## Units
-<!-- tags: { kind: [css, layout], concern: [accessibility] } -->
+<!-- tags: { kind: [css, layout], concern: [accessibility, ux] } -->
 - Font sizes MUST use `rem`. MUST NOT set font sizes in `px`.
 - Layout SHOULD use flexbox or grid; MUST NOT use floats for layout.
 

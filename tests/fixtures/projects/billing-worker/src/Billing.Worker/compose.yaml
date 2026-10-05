@@ -1,0 +1,5 @@
+services:
+  readmodel:
+    image: mongo:7
+  broker:
+    image: confluentinc/cp-kafka:7.6.0

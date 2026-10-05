@@ -21,13 +21,23 @@ Scope of the assessment, if given: $ARGUMENTS
 
 ## 1. Work out the scope
 
-- If the repository has `.claude/standards.json` (set by the architects), use its `scope` and its
-  `exclude` list, and say so. That's the assignment the user means. (Older repositories declare
-  the scope in `.claude/CLAUDE.md`.)
+- If the repository has `.claude/standards.json` (written by the init skill, kept by the
+  architects), use it and say so. That's the assignment the user means. Its `components` are the
+  components to review, each with its own `scope` plus the file's `product`; a single `scope`
+  applies to the whole repository. Use its `exclude` list too. (Older repositories declare the
+  scope in `.claude/CLAUDE.md`.)
+  For each component, also run the `classifier` agent with the component's path, in parallel. Its
+  `differences` are **scope drift**: what the code shows that the declared scope doesn't (a Redis
+  package in a component that doesn't list `redis`), and declared values with no evidence. Keep
+  using the declared scope for the review; report the drift (step 4).
+  If the classifier's status is `unavailable`, the Scope drift line reads "not checked (standards
+  unavailable)".
 - Otherwise, look at what the project contains and propose a scope: its components (for example
   an API, a web front end, a stylesheet folder) and a `kind` for each (`api`, `backend`, `frontend`,
-  `react`, `css`, `sass`, …), and its `runtime` (`dotnet` for C#/.NET, `node` for JavaScript or
-  TypeScript servers; standards written for a runtime come back only when it's named). Call
+  `react`, `css`, `sass`, …), its `runtime` (`dotnet` for C#/.NET, `node` for JavaScript or
+  TypeScript servers), what it `uses` (`postgres`, `kafka`, …, from its packages and
+  configuration) and the `pattern`s it follows (`ddd`, `cqrs`, `event-sourcing`; ask, don't
+  guess). Standards written for a runtime, dependency or pattern come back only when it's named. Call
   `list_standards` and use only fields and values it returns. Ask the user which product this is
   if it isn't clear, and confirm the proposed scope before going on. Don't guess a product.
 - Leave `concern` out unless the user asked about specific concerns, so every concern applies.
@@ -92,8 +102,12 @@ SHOULD deviations
 Passed: <rules that passed, by topic>
 Excluded by scope: <topics, with the reason from .claude/standards.json; not checked, not passes>
 Not covered: <areas the project touches that no standard covers>
+Scope drift: <per component, from the classifier: "uses redis (StackExchange.Redis in
+             Orders.Api.csproj), not declared"; or "none">
 Questions for the architects: <standards that seem not to fit this project, if any>
 ```
+
+Scope drift goes to the architects: record it in .claude/standards.json, or remove what the code shouldn't use.
 
 ## 5. Compare with the last run, and save the report
 
