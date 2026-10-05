@@ -14,6 +14,8 @@ developer gets:
 
 - **the standards for this task, and only those,** with product- and runtime-specific rules already
   applied;
+- **an approved way to start new work**: recipes from the architects (data access with EF Core
+  or Dapper, …), chosen through a few questions and recorded for every agent to see;
 - **a check of the finished work** against each required rule, citing file and line, and a record
   of what was applied and decided, saved with the change;
 - **an assessment of an existing project**, grouped by root cause into defects to fix and decisions
@@ -30,15 +32,16 @@ Who this helps, and how: [use-cases.md](use-cases.md).
   author doesn't grade its own output.
 - **Classification from published standards.** A taxonomy of what the code is (`api`, `css`,
   `react`) and what it must achieve (`security`, `accessibility`), sourced from ISO/IEC 25010, OWASP
-  ASVS and W3C WCAG, with runtimes (`dotnet`, `node`) so rules reach only the code they fit.
+  ASVS and W3C WCAG, plus what it runs on (`dotnet`, `node`), depends on (`postgres`, `kafka`) and
+  follows (`ddd`, `event-sourcing`), so rules reach only the code they fit.
 - **The repository, not the prompt, decides.** A project declares its scope and its approved
   exclusions, so an ordinary request is enough, and Claude never excuses itself from a rule.
 - **Measured, not assumed.** A golden set scores retrieval; assessments keep every run for
   comparison.
 - **Context kept small.** A few hundred tokens per session until a skill is used; details are
   fetched only when a task needs them.
-- **Built, tested and corrected.** 82 unit and integration tests, and the failures found along the
-  way, with how each was fixed.
+- **Built, tested and corrected.** 170 unit tests, 13 integration tests and 31 hook tests, and the
+  failures found along the way, with how each was fixed.
 - **Fully local, and debuggable.** One clone, one command (`/setup`), nothing hosted; run it from
   your IDE and step through a real request.
 
@@ -49,7 +52,8 @@ The reasoning behind each decision is in [design-notes.md](design-notes.md).
 > connects Claude Code to the services, which you run from your IDE so you can step through them.
 > It ships with example standards that show the format. It has no authentication and filters in
 > memory; what a production deployment would need is listed in
-> [design-notes.md](design-notes.md#what-a-production-version-would-need).
+> [design-notes.md](design-notes.md#what-a-production-version-would-need), and what we measured
+> and plan next in [Known gaps and next revision](design-notes.md#known-gaps-and-next-revision).
 
 ## Quick start
 
@@ -63,8 +67,8 @@ The reasoning behind each decision is in [design-notes.md](design-notes.md).
 4. **Connect** the plugin for one session, or install it for all your projects. Everything stays on
    your machine.
 
-Then try: *"Which standards apply to a web API for xyz-public-app?"*, or in another repository,
-`/acme:assess`.
+Then try: *"Which standards apply to a web API for xyz-public-app?"* In another repository, run
+`/acme:init` to describe it once, then `/acme:assess` to see how it measures up.
 
 ## Documentation
 
@@ -75,17 +79,23 @@ Everything below is also indexed in [guide/](guide/README.md).
 | [Getting started](guide/getting-started.md) | Requirements, running the services (and debugging them), trying it, troubleshooting |
 | [Install the plugin](guide/install.md) | The local catalog, installing for all projects or one, update, rename, uninstall |
 | [Set up a project](guide/project-setup.md) | `.claude/standards.json`: a project's scope and approved exclusions |
-| [How it works](guide/how-it-works.md) | The architecture, the three MCP tools, the document Claude reads, filters and fields |
+| [How it works](guide/how-it-works.md) | The architecture, the four MCP tools, the document Claude reads, filters and fields |
 | [Write standards](guide/writing-standards.md) | The Markdown format, the taxonomy, runtimes, adding an owner |
+| [Templates and recipes](guide/templates.md) | Approved ways to start new work (data access with EF Core or Dapper, …), and how every agent sees the decisions |
 | [Testing and evaluation](guide/testing-and-evaluation.md) | The tests, the golden set, retrieval results |
 
-**Skills and agent** ([all](guide/skills/README.md)):
+**Skills and agents** ([all](guide/skills/README.md)):
 
 | | |
 |---|---|
+| [`/acme:init`](guide/skills/init.md) | Describes a project once: scans it, confirms it with you, and writes its standards settings |
 | [`/acme:standards`](guide/skills/standards.md) | Brings the standards for a task into the conversation, and has the work checked |
 | [`/acme:assess`](guide/skills/assess.md) | Assesses an existing project; saves each run for comparison |
+| [`/acme:classify`](guide/skills/classify.md) | Classifies work into the standards' categories |
+| [`/acme:plan-check`](guide/skills/plan-check.md) | Checks a finished plan before it's built |
 | [`acme:standards-reviewer`](guide/skills/standards-reviewer.md) | Read-only agent that checks code against the standards |
+| `acme:classifier` | Read-only agent that classifies work and returns JSON |
+| `acme:plan-checker` | Read-only agent that checks a plan against the standards |
 | [`/setup`](guide/skills/setup.md) | Sets up, updates, renames or uninstalls; a project skill of this repository |
 
 "Acme" is a stand-in: the plugin is generic (`plugins/my-company`), and a one-line local catalog

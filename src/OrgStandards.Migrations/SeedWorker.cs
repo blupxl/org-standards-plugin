@@ -21,9 +21,9 @@ public sealed class SeedWorker(
                 await SeedAsync(source, stoppingToken);
             }
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            logger.LogError(ex, "Migration or seeding failed");
+            logger.LogError(exception, "Migration or seeding failed");
             Environment.ExitCode = 1;
         }
         finally
@@ -37,18 +37,18 @@ public sealed class SeedWorker(
         var connectionString = configuration.GetConnectionString($"{source}-db")
             ?? throw new InvalidOperationException($"No connection string for source '{source}'.");
 
-        await using var db = new StandardsDbContext(
+        await using var database = new StandardsDbContext(
             new DbContextOptionsBuilder<StandardsDbContext>().UseNpgsql(connectionString).Options);
 
-        await db.Database.MigrateAsync(cancellationToken);
+        await database.Database.MigrateAsync(cancellationToken);
 
         var folder = Path.Combine(AppContext.BaseDirectory, "seed", source);
         var topics = Directory.EnumerateFiles(folder, "*.md").Order().SelectMany(StandardsMarkdown.Parse).ToList();
 
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-        await db.Topics.ExecuteDeleteAsync(cancellationToken);
-        db.Topics.AddRange(topics);
-        await db.SaveChangesAsync(cancellationToken);
+        await using var transaction = await database.Database.BeginTransactionAsync(cancellationToken);
+        await database.Topics.ExecuteDeleteAsync(cancellationToken);
+        database.Topics.AddRange(topics);
+        await database.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
         logger.LogInformation("Seeded {Count} topics into {Source}", topics.Count, source);

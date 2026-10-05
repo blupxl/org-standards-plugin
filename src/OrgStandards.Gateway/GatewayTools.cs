@@ -52,11 +52,16 @@ public static class GatewayTools
                  "answered, and what is missing. Rules use MUST / MUST NOT / SHOULD. \"product\" is a specific filter: general " +
                  "topics come back as the base, and a product topic with the same name replaces the general one. Without " +
                  "\"product\", only general topics come back. Topics with examples or reference material (such as color " +
-                 "tokens or component lists) say so and name the get_topic call that fetches it. " + FilterRules)]
+                 "tokens or component lists) say so and name the get_topic call that fetches it. Approved recipes for new " +
+                 "work (for example data access on Postgres) come back only with \"template\": [\"recipe\"]; the owners' " +
+                 "recommended one is marked. " + FilterRules)]
     public static async Task<string> GetStandards(
         SourceClient sources,
         [Description("The requests to resolve, e.g. [{ \"id\": \"api\", \"filter\": { \"product\": [\"xyz-public-app\"], \"kind\": [\"api\"], \"concern\": [\"resilience\"] } }].")]
         StandardsRequest?[]? requests,
+        [Description("Optional: true returns headlines only (each topic's name, owner and first rule, with recipe markers), " +
+                     "to choose which topics to fetch in full with get_topic.")]
+        bool headlines = false,
         CancellationToken cancellationToken = default)
     {
         // Clean every request first: no nulls go past this point.
@@ -70,14 +75,24 @@ public static class GatewayTools
                    "for example [{ \"filter\": { \"kind\": [\"api\"] } }].";
         }
 
+        // The owners are asked with each kind plus its ancestors. Validation and the scope line keep the requested filter.
+        // The taxonomy is fetched only when a request has a kind: nothing else expands.
+        var taxonomy = Resolver.NeedsTaxonomy(cleaned.Select(request => request.Filter))
+            ? await FetchTaxonomyAsync(sources, cancellationToken, ownerOnly: true)
+            : null;
+        var broadened = cleaned.Select(request => Resolver.Broaden(request.Filter, taxonomy)).ToArray();
+
         // One call per source for the whole batch.
         var calls = await sources.CallAllAsync<QueryResult>(
             "query_topics",
-            new Dictionary<string, object?> { ["filters"] = cleaned.Select(request => request.Filter).ToArray() },
+            new Dictionary<string, object?> { ["filters"] = broadened.Select(pair => pair.Filter).ToArray() },
             cancellationToken);
 
         var documents = cleaned.Select((request, index) =>
-            StandardsDocument.Render(Resolver.Resolve(request.Id, request.Filter, index, calls, request.Exclude)));
+            StandardsDocument.Render(
+                Resolver.Resolve(request.Id, request.Filter, index, calls, request.Exclude,
+                    Ancestry.Added(request.Filter, broadened[index].Filter), broadened[index].Unavailable),
+                headlines));
 
         return string.Join("\n\n---\n\n", documents);
     }
@@ -102,9 +117,35 @@ public static class GatewayTools
         }
 
         filter = Filters.Clean(filter);
+        var taxonomy = Resolver.NeedsTaxonomy([filter]) ? await FetchTaxonomyAsync(sources, cancellationToken, ownerOnly: true) : null;
+        var (broadened, unavailable) = Resolver.Broaden(filter, taxonomy);
         var calls = await sources.CallAllAsync<QueryResult>(
-            "query_topics", new Dictionary<string, object?> { ["filters"] = new[] { filter } }, cancellationToken);
+            "query_topics", new Dictionary<string, object?> { ["filters"] = new[] { broadened } }, cancellationToken);
 
-        return StandardsDocument.RenderTopic(Resolver.Resolve(null, filter, 0, calls, exclude), topic.Trim());
+        return StandardsDocument.RenderTopic(
+            Resolver.Resolve(null, filter, 0, calls, exclude, Ancestry.Added(filter, broadened), unavailable), topic.Trim());
+    }
+
+    // Broadening a request asks only the configured taxonomy owner. get_taxonomy asks every source, to report conflicts.
+    private static async Task<TaxonomyResult> FetchTaxonomyAsync(
+        SourceClient sources, CancellationToken cancellationToken, bool ownerOnly = false)
+    {
+        var arguments = new Dictionary<string, object?>();
+        var calls = ownerOnly
+            ? await Task.WhenAll(TaxonomyMerge.SourcesToAsk(sources.Sources, sources.TaxonomyOwner)
+                .Select(source => sources.CallAsync<TaxonomyListing>(source, "describe_taxonomy", arguments, cancellationToken)))
+            : await sources.CallAllAsync<TaxonomyListing>("describe_taxonomy", arguments, cancellationToken);
+        return TaxonomyMerge.Merge(calls, sources.TaxonomyOwner);
+    }
+
+    [McpServerTool(Name = "get_taxonomy", ReadOnly = true, Idempotent = true)]
+    [Description("Returns the categories standards are filed under, from the owners' taxonomy. Each has its facet (the " +
+                 "filter field it's used in: kind, concern, runtime, uses or pattern), a description, broader categories, " +
+                 "and the file patterns and package, resource or image signals that indicate it. Use it to classify work " +
+                 "(a task, a plan, a project) into the filter for get_standards: match evidence to signals and file " +
+                 "patterns first, then to descriptions. Takes no input; send no plan or code.")]
+    public static async Task<TaxonomyResult> GetTaxonomy(SourceClient sources, CancellationToken cancellationToken = default)
+    {
+        return await FetchTaxonomyAsync(sources, cancellationToken);
     }
 }

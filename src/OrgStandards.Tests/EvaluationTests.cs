@@ -1,3 +1,4 @@
+using OrgStandards.Data;
 using OrgStandards.Evaluation;
 
 namespace OrgStandards.Tests;
@@ -77,6 +78,17 @@ public class EvaluationTests
         Assert.Equal(["sass"], retrieval.Categories);
         Assert.Equal(["sass"], retrieval.Filter["kind"]);
         Assert.Contains(retrieval.Topics, topic => topic.Topic == "Sass modules");
+    }
+
+    [Fact]
+    public void A_kind_also_retrieves_topics_tagged_with_its_ancestors()
+    {
+        // Spacing is tagged css, not sass; sass is broader-tagged css, so asking about sass reaches it.
+        var retrieval = new TagStrategy(Taxonomy, acceptSuggestions: false)
+            .Retrieve(Task("Our Sass files still use @import, clean them up", []), Corpus);
+
+        Assert.Equal(["sass"], retrieval.Filter["kind"]);
+        Assert.Contains(retrieval.Topics, topic => topic.Topic == "Spacing");
     }
 
     [Fact]

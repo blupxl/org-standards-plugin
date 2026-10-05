@@ -113,4 +113,83 @@ public class GatewayIntegrationTests(StandardsAppFixture app)
         Assert.Contains("acme-website", listing);
         Assert.Contains("xyz-public-app", listing);
     }
+
+    [RequiresContainerRuntimeFact]
+    public async Task The_taxonomy_comes_from_its_owner_with_signals()
+    {
+        var taxonomy = await app.CallAsync("get_taxonomy", []);
+
+        Assert.Matches("\"status\"\\s*:\\s*\"ok\"", taxonomy);
+        Assert.Contains("\"name\":\"redis\"", taxonomy.Replace(" ", ""));
+        Assert.Contains("StackExchange.Redis", taxonomy);
+    }
+
+    [RequiresContainerRuntimeFact]
+    public async Task Only_the_configured_owner_serves_a_taxonomy()
+    {
+        var taxonomy = await app.CallAsync("get_taxonomy", []);
+
+        Assert.Matches("\"status\"\\s*:\\s*\"ok\"", taxonomy);
+        Assert.Matches("\"conflicts\"\\s*:\\s*\\[\\s*\\]", taxonomy);
+    }
+
+    [RequiresContainerRuntimeFact]
+    public async Task Headlines_name_every_topic_and_only_its_first_rule()
+    {
+        var document = await app.CallAsync("get_standards", new()
+        {
+            ["requests"] = new[] { new Dictionary<string, object?> { ["filter"] = new Dictionary<string, string[]> { ["kind"] = ["api"], ["runtime"] = ["dotnet"] } } },
+            ["headlines"] = true,
+        });
+
+        Assert.Contains("> **Headlines only:**", document);
+        Assert.Contains("## Naming in .NET", document);
+        Assert.Contains("- Names MUST follow Microsoft's C# identifier naming rules", document);
+        Assert.DoesNotContain("MUST NOT name a type after how it moves data", document);
+    }
+
+    [RequiresContainerRuntimeFact]
+    public async Task A_kind_also_brings_the_standards_of_its_ancestors()
+    {
+        // Colors is tagged css and styling, not sass. A sass request now gets it.
+        var document = await app.CallAsync("get_standards", Request(new() { ["kind"] = ["sass"] }));
+
+        Assert.Contains("## Colors", document);
+        Assert.Contains("## Sass modules", document);
+        Assert.Contains("> **Scope:** kind = sass", document);
+        Assert.Contains("> **Also applies:** css, styling (broader kinds of the requested kind).", document);
+    }
+
+    [RequiresContainerRuntimeFact]
+    public async Task A_concern_does_not_bring_its_broader_concern()
+    {
+        // Cache keys is a caching topic for backend code (api is a backend). Async I/O is a
+        // performance-only topic for api: caching is a kind of performance, but a concern never expands.
+        var document = await app.CallAsync("get_standards", Request(new() { ["kind"] = ["api"], ["concern"] = ["caching"] }));
+
+        Assert.Contains("## Cache keys", document);
+        Assert.DoesNotContain("## Async I/O", document);
+    }
+
+    [RequiresContainerRuntimeFact]
+    public async Task A_topic_listed_for_a_kind_can_be_fetched_with_the_same_filter()
+    {
+        var topic = await app.CallAsync("get_topic", new()
+        {
+            ["topic"] = "Colors",
+            ["filter"] = new Dictionary<string, string[]> { ["kind"] = ["sass"] },
+        });
+
+        Assert.Contains("## Colors", topic);
+        Assert.Contains("> **Also applies:** css, styling", topic);
+    }
+
+    [RequiresContainerRuntimeFact]
+    public async Task A_mistyped_kind_is_still_reported_as_unknown()
+    {
+        var document = await app.CallAsync("get_standards", Request(new() { ["kind"] = ["sas"] }));
+
+        Assert.Contains("Unknown value: kind = \"sas\"", document);
+        Assert.DoesNotContain("Also applies", document);
+    }
 }

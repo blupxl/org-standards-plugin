@@ -52,80 +52,80 @@ public static class Report
     public static string ToMarkdown(EvaluationReport report)
     {
         var run = report.Run;
-        var s = report.Summary;
-        var md = new StringBuilder();
+        var summary = report.Summary;
+        var markdown = new StringBuilder();
 
-        md.AppendLine($"# Retrieval evaluation: {run.Strategy}");
-        md.AppendLine();
-        md.AppendLine(run.Description);
-        md.AppendLine();
-        md.AppendLine($"- **Date:** {run.Date} · **Commit:** {run.Commit}{(run.UncommittedChanges ? " (with uncommitted changes)" : "")}");
-        md.AppendLine($"- **Data:** {run.Data}: {run.Topics} topics from {run.Owners} owners (standards `{run.StandardsFingerprint}`, golden set `{run.GoldenSetFingerprint}`)");
-        md.AppendLine($"- **Model:** {run.Model} · **Ranked:** {(run.Ranked ? "yes" : "no (rank metrics don't apply)")}");
-        md.AppendLine();
-        md.AppendLine("## Summary");
-        md.AppendLine();
-        md.AppendLine("| Metric | Value |");
-        md.AppendLine("|---|---|");
-        md.AppendLine($"| Tasks | {s.Tasks} ({s.TasksWithStandards} with standards, {s.TasksWithoutStandards} without) |");
-        md.AppendLine($"| Mean recall | {Percent(s.MeanRecall)} |");
-        md.AppendLine($"| Found every expected topic | {Percent(s.FoundAllRate)} of tasks |");
-        md.AppendLine($"| Found at least one | {Percent(s.FoundAnyRate)} of tasks |");
-        md.AppendLine($"| Returned nothing | {s.ReturnedNothing} of {s.Tasks} tasks |");
-        md.AppendLine($"| Mean precision (tasks that returned something) | {Percent(s.MeanPrecision)} |");
-        md.AppendLine($"| Mean topics returned | {s.MeanReturned.ToString("0.0", CultureInfo.InvariantCulture)} |");
-        md.AppendLine($"| Forbidden topics returned | {s.ForbiddenReturned} |");
-        md.AppendLine($"| No-standard tasks answered with nothing | {s.NoStandardCorrect} of {s.TasksWithoutStandards} |");
+        markdown.AppendLine($"# Retrieval evaluation: {run.Strategy}");
+        markdown.AppendLine();
+        markdown.AppendLine(run.Description);
+        markdown.AppendLine();
+        markdown.AppendLine($"- **Date:** {run.Date} · **Commit:** {run.Commit}{(run.UncommittedChanges ? " (with uncommitted changes)" : "")}");
+        markdown.AppendLine($"- **Data:** {run.Data}: {run.Topics} topics from {run.Owners} owners (standards `{run.StandardsFingerprint}`, golden set `{run.GoldenSetFingerprint}`)");
+        markdown.AppendLine($"- **Model:** {run.Model} · **Ranked:** {(run.Ranked ? "yes" : "no (rank metrics don't apply)")}");
+        markdown.AppendLine();
+        markdown.AppendLine("## Summary");
+        markdown.AppendLine();
+        markdown.AppendLine("| Metric | Value |");
+        markdown.AppendLine("|---|---|");
+        markdown.AppendLine($"| Tasks | {summary.Tasks} ({summary.TasksWithStandards} with standards, {summary.TasksWithoutStandards} without) |");
+        markdown.AppendLine($"| Mean recall | {Percent(summary.MeanRecall)} |");
+        markdown.AppendLine($"| Found every expected topic | {Percent(summary.FoundAllRate)} of tasks |");
+        markdown.AppendLine($"| Found at least one | {Percent(summary.FoundAnyRate)} of tasks |");
+        markdown.AppendLine($"| Returned nothing | {summary.ReturnedNothing} of {summary.Tasks} tasks |");
+        markdown.AppendLine($"| Mean precision (tasks that returned something) | {Percent(summary.MeanPrecision)} |");
+        markdown.AppendLine($"| Mean topics returned | {summary.MeanReturned.ToString("0.0", CultureInfo.InvariantCulture)} |");
+        markdown.AppendLine($"| Forbidden topics returned | {summary.ForbiddenReturned} |");
+        markdown.AppendLine($"| No-standard tasks answered with nothing | {summary.NoStandardCorrect} of {summary.TasksWithoutStandards} |");
         if (run.Ranked)
         {
-            md.AppendLine($"| Mean reciprocal rank | {s.MeanReciprocalRank?.ToString("0.00", CultureInfo.InvariantCulture)} |");
-            md.AppendLine($"| Mean recall@{Evaluator.K} | {Percent(s.MeanRecallAt5)} |");
+            markdown.AppendLine($"| Mean reciprocal rank | {summary.MeanReciprocalRank?.ToString("0.00", CultureInfo.InvariantCulture)} |");
+            markdown.AppendLine($"| Mean recall@{Evaluator.K} | {Percent(summary.MeanRecallAt5)} |");
         }
 
-        md.AppendLine($"| Category recall | {Percent(s.MeanCategoryRecall)} |");
-        md.AppendLine($"| Category precision | {Percent(s.MeanCategoryPrecision)} |");
-        md.AppendLine();
-        md.AppendLine("## Tasks");
-        md.AppendLine();
-        md.AppendLine("| Task | Categories (expected → found) | Expected | Missed | Returned | Recall | Precision |");
-        md.AppendLine("|---|---|---|---|---|---|---|");
-        foreach (var t in report.Tasks)
+        markdown.AppendLine($"| Category recall | {Percent(summary.MeanCategoryRecall)} |");
+        markdown.AppendLine($"| Category precision | {Percent(summary.MeanCategoryPrecision)} |");
+        markdown.AppendLine();
+        markdown.AppendLine("## Tasks");
+        markdown.AppendLine();
+        markdown.AppendLine("| Task | Categories (expected → found) | Expected | Missed | Returned | Recall | Precision |");
+        markdown.AppendLine("|---|---|---|---|---|---|---|");
+        foreach (var task in report.Tasks)
         {
-            var scope = t.Scope.Count == 0 ? "" : $" *({string.Join(", ", t.Scope.Select(e => $"{e.Key}: {string.Join(", ", e.Value)}"))})*";
-            md.AppendLine($"| {Escape(t.Task)}{scope} | {List(t.ExpectedCategories)} → {List(t.Categories)} | {List(t.Expected)} | " +
-                          $"{List(t.Missed)} | {t.Returned.Length} | {Percent(t.Recall)} | {Percent(t.Precision)} |");
+            var scope = task.Scope.Count == 0 ? "" : $" *({string.Join(", ", task.Scope.Select(entry => $"{entry.Key}: {string.Join(", ", entry.Value)}"))})*";
+            markdown.AppendLine($"| {Escape(task.Task)}{scope} | {List(task.ExpectedCategories)} → {List(task.Categories)} | {List(task.Expected)} | " +
+                          $"{List(task.Missed)} | {task.Returned.Length} | {Percent(task.Recall)} | {Percent(task.Precision)} |");
         }
 
-        return md.ToString();
+        return markdown.ToString();
     }
 
     // Several strategies on the same golden set, side by side (REQ-EVAL AC3).
     public static string Comparison(IReadOnlyList<EvaluationReport> reports)
     {
-        var md = new StringBuilder();
+        var markdown = new StringBuilder();
         var first = reports[0].Run;
-        md.AppendLine("# Retrieval evaluation: comparison");
-        md.AppendLine();
-        md.AppendLine($"- **Date:** {first.Date} · **Commit:** {first.Commit}{(first.UncommittedChanges ? " (with uncommitted changes)" : "")}");
-        md.AppendLine($"- **Data:** {first.Data}: {first.Topics} topics from {first.Owners} owners (standards `{first.StandardsFingerprint}`, golden set `{first.GoldenSetFingerprint}`)");
-        md.AppendLine();
-        md.AppendLine($"| Metric | {string.Join(" | ", reports.Select(r => r.Run.Strategy))} |");
-        md.AppendLine($"|---|{string.Concat(reports.Select(_ => "---|"))}");
-        Row("Mean recall", r => Percent(r.Summary.MeanRecall));
-        Row("Found every expected topic", r => Percent(r.Summary.FoundAllRate));
-        Row("Found at least one", r => Percent(r.Summary.FoundAnyRate));
-        Row("Returned nothing", r => $"{r.Summary.ReturnedNothing} of {r.Summary.Tasks}");
-        Row("Mean precision", r => Percent(r.Summary.MeanPrecision));
-        Row("Mean topics returned", r => r.Summary.MeanReturned.ToString("0.0", CultureInfo.InvariantCulture));
-        Row("Forbidden topics returned", r => r.Summary.ForbiddenReturned.ToString(CultureInfo.InvariantCulture));
-        Row("No-standard tasks answered with nothing", r => $"{r.Summary.NoStandardCorrect} of {r.Summary.TasksWithoutStandards}");
-        Row($"Mean recall@{Evaluator.K}", r => r.Run.Ranked ? Percent(r.Summary.MeanRecallAt5) : "n/a (unranked)");
-        Row("Category recall", r => Percent(r.Summary.MeanCategoryRecall));
-        Row("Category precision", r => Percent(r.Summary.MeanCategoryPrecision));
-        return md.ToString();
+        markdown.AppendLine("# Retrieval evaluation: comparison");
+        markdown.AppendLine();
+        markdown.AppendLine($"- **Date:** {first.Date} · **Commit:** {first.Commit}{(first.UncommittedChanges ? " (with uncommitted changes)" : "")}");
+        markdown.AppendLine($"- **Data:** {first.Data}: {first.Topics} topics from {first.Owners} owners (standards `{first.StandardsFingerprint}`, golden set `{first.GoldenSetFingerprint}`)");
+        markdown.AppendLine();
+        markdown.AppendLine($"| Metric | {string.Join(" | ", reports.Select(report => report.Run.Strategy))} |");
+        markdown.AppendLine($"|---|{string.Concat(reports.Select(_ => "---|"))}");
+        Row("Mean recall", report => Percent(report.Summary.MeanRecall));
+        Row("Found every expected topic", report => Percent(report.Summary.FoundAllRate));
+        Row("Found at least one", report => Percent(report.Summary.FoundAnyRate));
+        Row("Returned nothing", report => $"{report.Summary.ReturnedNothing} of {report.Summary.Tasks}");
+        Row("Mean precision", report => Percent(report.Summary.MeanPrecision));
+        Row("Mean topics returned", report => report.Summary.MeanReturned.ToString("0.0", CultureInfo.InvariantCulture));
+        Row("Forbidden topics returned", report => report.Summary.ForbiddenReturned.ToString(CultureInfo.InvariantCulture));
+        Row("No-standard tasks answered with nothing", report => $"{report.Summary.NoStandardCorrect} of {report.Summary.TasksWithoutStandards}");
+        Row($"Mean recall@{Evaluator.K}", report => report.Run.Ranked ? Percent(report.Summary.MeanRecallAt5) : "n/a (unranked)");
+        Row("Category recall", report => Percent(report.Summary.MeanCategoryRecall));
+        Row("Category precision", report => Percent(report.Summary.MeanCategoryPrecision));
+        return markdown.ToString();
 
         void Row(string name, Func<EvaluationReport, string> value) =>
-            md.AppendLine($"| {name} | {string.Join(" | ", reports.Select(value))} |");
+            markdown.AppendLine($"| {name} | {string.Join(" | ", reports.Select(value))} |");
     }
 
     private static string Percent(double? value) =>

@@ -35,7 +35,7 @@ public sealed class StandardsAppFixture : IAsyncLifetime
         await _app.StartAsync(timeout.Token);
 
         // The owners wait for the migrations, so once they're up the standards are loaded.
-        foreach (var resource in new[] { "design", "platform", "security", "gateway", "acme-web" })
+        foreach (var resource in new[] { "design", "platform", "security", "data", "gateway", "acme-web" })
         {
             await _app.ResourceNotifications.WaitForResourceHealthyAsync(resource, timeout.Token);
         }

@@ -1,0 +1,37 @@
+{
+  "fixture": "billing-worker",
+  "components": [
+    {
+      "name": "billing-worker",
+      "path": "src/Billing.Worker",
+      "exact": [
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.csproj", "where": "src/Billing.Worker/Billing.Worker.csproj" },
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.cs", "where": "src/Billing.Worker/Program.cs" },
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.cs", "where": "src/Billing.Worker/InvoiceWorker.cs" },
+        { "category": "kafka", "facet": "uses", "evidence": "Confluent.Kafka", "where": "src/Billing.Worker/Billing.Worker.csproj" },
+        { "category": "kafka", "facet": "uses", "evidence": "confluentinc/cp-kafka", "where": "src/Billing.Worker/compose.yaml" },
+        { "category": "dapper", "facet": "uses", "evidence": "Dapper", "where": "src/Billing.Worker/Billing.Worker.csproj" },
+        { "category": "eventuous", "facet": "uses", "evidence": "Eventuous.Subscriptions", "where": "src/Billing.Worker/Billing.Worker.csproj" },
+        { "category": "sqlserver", "facet": "uses", "evidence": "Microsoft.Data.SqlClient", "where": "src/Billing.Worker/Billing.Worker.csproj" },
+        { "category": "mongodb", "facet": "uses", "evidence": "MongoDB.Driver", "where": "src/Billing.Worker/Billing.Worker.csproj" },
+        { "category": "mongodb", "facet": "uses", "evidence": "mongo:7", "where": "src/Billing.Worker/compose.yaml" }
+      ]
+    },
+    {
+      "name": "billing-apphost",
+      "path": "src/Billing.AppHost",
+      "exact": [
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.csproj", "where": "src/Billing.AppHost/Billing.AppHost.csproj" },
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.cs", "where": "src/Billing.AppHost/Program.cs" },
+        { "category": "sqlserver", "facet": "uses", "evidence": "AddSqlServer(", "where": "src/Billing.AppHost/Program.cs" },
+        { "category": "mongodb", "facet": "uses", "evidence": "AddMongoDB(", "where": "src/Billing.AppHost/Program.cs" },
+        { "category": "kafka", "facet": "uses", "evidence": "AddKafka(", "where": "src/Billing.AppHost/Program.cs" }
+      ]
+    }
+  ],
+  "distractors": [
+    { "text": "Redis", "where": "README.md", "why": "mentioned in prose only; no package, image or code" },
+    { "text": "StackExchange.Redis", "where": "src/Billing.Worker/Billing.Worker.csproj", "why": "inside an XML comment; the package is not referenced" },
+    { "text": "AddRedis(", "where": "src/Billing.AppHost/Program.cs", "why": "inside a line comment; the resource is not added" }
+  ]
+}

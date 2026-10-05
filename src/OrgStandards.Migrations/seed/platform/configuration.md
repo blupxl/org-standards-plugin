@@ -1,6 +1,6 @@
 ---
 title: Configuration
-version: 1.1
+version: 1.2
 kind: [configuration, backend]
 ---
 <!-- PLACEHOLDER standards that exercise the format. Replace with real ones. -->
@@ -10,8 +10,12 @@ kind: [configuration, backend]
   startup, not fail a request later.
 - Code MUST read settings through one typed settings object per section, read once, not by looking
   up keys or environment variables throughout the code.
+- A single on/off switch MAY be read on its own, once at startup, without a settings object. It
+  MUST have a deliberate safe default, so a missing switch isn't an error; an invalid value still
+  stops the startup.
 
-Why: a missing or mistyped setting fails the deployment at startup, not a user's request later.
+Why: a missing or mistyped setting fails the deployment at startup, not a user's request later. A
+switch's safe default is its own validation.
 
 ## Environments
 - Values that differ between environments MUST come from configuration (environment variables,

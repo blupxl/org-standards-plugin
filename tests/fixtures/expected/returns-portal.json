@@ -1,0 +1,48 @@
+{
+  "fixture": "returns-portal",
+  "components": [
+    {
+      "name": "returns-web",
+      "path": "web",
+      "exact": [
+        { "category": "node", "facet": "runtime", "evidence": "package.json", "where": "web/package.json", "scored": false, "why": "file pattern only: node is described as a server runtime, and this is a browser app" },
+        { "category": "frontend", "facet": "kind", "evidence": "*.vue", "where": "web/src/App.vue" }
+      ]
+    },
+    {
+      "name": "returns-bff",
+      "path": "bff",
+      "exact": [
+        { "category": "node", "facet": "runtime", "evidence": "package.json", "where": "bff/package.json" }
+      ]
+    },
+    {
+      "name": "returns-api",
+      "path": "src/Returns.Api",
+      "exact": [
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.csproj", "where": "src/Returns.Api/Returns.Api.csproj" },
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.cs", "where": "src/Returns.Api/Program.cs" },
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.cs", "where": "src/Returns.Api/ReturnsDbContext.cs" },
+        { "category": "ef-core", "facet": "uses", "evidence": "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL", "where": "src/Returns.Api/Returns.Api.csproj", "why": "exact for ef-core through Aspire.*.EntityFrameworkCore.*. Not exact for postgres: the postgres signal Npgsql* must start the name, so returns-api is postgres by meaning only and postgres is exact only through AddPostgres( in the AppHost" }
+      ]
+    },
+    {
+      "name": "returns-apphost",
+      "path": "src/Returns.AppHost",
+      "exact": [
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.csproj", "where": "src/Returns.AppHost/Returns.AppHost.csproj" },
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.cs", "where": "src/Returns.AppHost/Program.cs" },
+        { "category": "postgres", "facet": "uses", "evidence": "AddPostgres(", "where": "src/Returns.AppHost/Program.cs" },
+        { "category": "redis", "facet": "uses", "evidence": "AddRedis(", "where": "src/Returns.AppHost/Program.cs" }
+      ]
+    }
+  ],
+  "outside": [
+    { "category": "dotnet", "facet": "runtime", "evidence": "*.slnx", "where": "Returns.slnx" }
+  ],
+  "distractors": [
+    { "text": "Microsoft.Extensions.Caching.StackExchangeRedis", "where": "src/Returns.Api/Returns.Api.csproj", "why": "a near miss: the redis signal is the package StackExchange.Redis itself, not a package whose name contains it. The API uses Redis by meaning only" },
+    { "text": "bitnami/redis:7", "where": "src/Returns.Api/compose.yaml", "why": "a near miss: the redis image signal is redis:* (the official image), and this one is bitnami/redis. Redis is exact in the AppHost only" },
+    { "text": "pg-promise", "where": "bff/package.json", "why": "a near miss: the postgres npm signal is exactly pg; pg-promise is a different package. The bff uses Postgres by meaning only" }
+  ]
+}

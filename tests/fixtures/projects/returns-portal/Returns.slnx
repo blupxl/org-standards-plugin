@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Returns.Api/Returns.Api.csproj" />
+  <Project Path="src/Returns.AppHost/Returns.AppHost.csproj" />
+</Solution>

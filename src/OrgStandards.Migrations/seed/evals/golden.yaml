@@ -178,6 +178,77 @@ tasks:
     categories: [api, documentation]
     expect: [API description, OpenAPI in .NET]
 
+  # Dependencies: a dependency's standards reach only components that use it
+  - task: Add a table for customer addresses
+    scope: { uses: [postgres] }
+    categories: [data-access, postgres]
+    expect: [Postgres naming, Postgres types, Migrations]
+    not: [SQL Server schemas, SQL Server types]
+  - task: Keep shopping carts in Redis between requests
+    scope: { uses: [redis] }
+    categories: [caching, redis]
+    expect: [Redis usage, Cache keys]
+    not: [MongoDB documents]
+
+  # Recipes: approved ways to add a capability
+  - task: Add data access to a new orders service on PostgreSQL
+    scope: { template: [recipe], runtime: [dotnet], uses: [postgres] }
+    categories: [data-access, postgres]
+    expect: ["Recipe: EF Core with PostgreSQL", "Recipe: Dapper with PostgreSQL"]
+    not: ["Recipe: EF Core with SQL Server"]
+
+  - task: Start a public orders API that front ends and partners will call
+    scope: { template: [recipe], runtime: [dotnet] }
+    categories: [api, security]
+    expect: ["Recipe: Minimal API service", "Recipe: JWT bearer authentication", "Recipe: Strict request validation", "Recipe: Rate limiting per client"]
+    not: ["Recipe: EF Core with SQL Server"]
+
+  - task: Make each order in the response say where it lives
+    scope: { runtime: [dotnet] }
+    categories: [api, documentation]
+    expect: [Resource locations, Resource locations in .NET]
+  - task: Scalar shows zeros and "string" for every field of our order model
+    scope: { runtime: [dotnet] }
+    categories: [api, documentation]
+    expect: [Model documentation, Model documentation in .NET]
+  - task: What should I call the class an endpoint returns?
+    scope: { runtime: [dotnet] }
+    categories: [api, backend]
+    expect: [Naming in .NET]
+    not: [Postgres naming]
+  - task: Where do I find the API docs for a service?
+    scope: { runtime: [dotnet] }
+    categories: [api, documentation]
+    expect: [API description, OpenAPI in .NET]
+  - task: Links in our responses point at the wrong host
+    scope: { runtime: [dotnet] }
+    categories: [api, security]
+    expect: [Resource locations in .NET]
+  - task: Our OpenAPI shows the wrong 400 response
+    scope: { runtime: [dotnet] }
+    categories: [api, documentation]
+    expect: [OpenAPI in .NET]
+
+  # Changing state safely
+  - task: Mark an order as shipped
+    categories: [api, data-access]
+    expect: [Routes and versioning, Concurrent changes]
+  - task: A retried POST created the same order twice
+    categories: [api, resilience, data-access]
+    expect: [Idempotent creates, Concurrent changes]
+
+  # Patterns and the technology behind them
+  - task: Add an OrderPlaced event to the orders aggregate
+    scope: { pattern: [ddd, event-sourcing], uses: [eventuous], runtime: [dotnet] }
+    categories: [event-sourcing, eventuous]
+    expect: [Events, Eventuous events, Aggregates]
+    not: [Kafka topics]
+  - task: Publish order events for the billing team to consume
+    scope: { uses: [kafka] }
+    categories: [kafka]
+    expect: [Kafka topics, Kafka consumers]
+    not: [Eventuous events]
+
   # Runtimes: a runtime's own standards reach only projects on that runtime
   - task: Set up the test project for our .NET API
     scope: { runtime: [dotnet] }

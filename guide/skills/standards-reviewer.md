@@ -12,7 +12,17 @@ grade its own work. Source:
 - When you ask for a review against the standards.
 
 It needs a filter and the files to review. Without either it says so and stops, rather than
-guessing.
+guessing. It skips generated and vendored files even when they're given: `bin/`, `obj/`,
+`node_modules/`, `dist/`, EF Core migrations and model snapshots, and lock files.
+
+A follow-up round is given the same filters, the previous report and the files changed since. It
+checks that the earlier failures are fixed, and checks the changes against the MUST rules in the
+report, so a fix that breaks another rule is caught; SHOULDs only where the report already has a
+note. It takes the rule numbers and text from the report: no second fetch of the standards and no
+re-reading of unchanged files.
+
+Decisions you approved in the [plan check](plan-check.md) are passed in as context. They never
+excuse a broken MUST.
 
 ## What it does
 

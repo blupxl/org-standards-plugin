@@ -18,7 +18,12 @@ var links = builder.Configuration.GetSection("Links").GetChildren()
     .Where(link => !string.IsNullOrWhiteSpace(link.Value))
     .ToDictionary(link => link.Key, link => link.Value!.TrimEnd('/'), StringComparer.OrdinalIgnoreCase);
 
-builder.Services.AddSingleton(new SourceInfo(sourceName, links));
+// The architecture group's owner serves the taxonomy; the AppHost says which owner that is.
+var taxonomy = builder.Configuration.GetValue<bool>("Source:ServesTaxonomy")
+    ? Taxonomy.Load(Path.Combine(AppContext.BaseDirectory, "taxonomy.yaml")).ToContract()
+    : null;
+
+builder.Services.AddSingleton(new SourceInfo(sourceName, links, taxonomy));
 builder.Services.AddMcpServer(options => options.ServerInfo = new() { Name = $"standards-{sourceName}", Version = "0.1.0" })
     .WithHttpTransport(options => options.Stateless = true)
     .WithToolsFromAssembly();

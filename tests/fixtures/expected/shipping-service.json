@@ -1,0 +1,22 @@
+{
+  "fixture": "shipping-service",
+  "components": [
+    {
+      "name": "shipping-api",
+      "path": "src/Shipping.Api",
+      "exact": [
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.csproj", "where": "src/Shipping.Api/Shipping.Api.csproj" },
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.cs", "where": "src/Shipping.Api/Program.cs" },
+        { "category": "dotnet", "facet": "runtime", "evidence": "*.cs", "where": "src/Shipping.Api/ShippingDbContext.cs" },
+        { "category": "sqlserver", "facet": "uses", "evidence": "Microsoft.EntityFrameworkCore.SqlServer", "where": "src/Shipping.Api/Shipping.Api.csproj" },
+        { "category": "ef-core", "facet": "uses", "evidence": "Microsoft.EntityFrameworkCore.Design", "where": "src/Shipping.Api/Shipping.Api.csproj" },
+        { "category": "ef-core", "facet": "uses", "evidence": "Microsoft.EntityFrameworkCore.SqlServer", "where": "src/Shipping.Api/Shipping.Api.csproj" }
+      ]
+    }
+  ],
+  "distractors": [
+    { "text": "MongoDB", "where": "README.md", "why": "mentioned in prose only, and rejected; no package, image or code" },
+    { "text": "Dapper", "where": "src/Shipping.Api/Shipping.Api.csproj", "why": "inside an XML comment; the package is not referenced" },
+    { "text": "mcr.microsoft.com/mssql/server", "where": "src/Shipping.Api/compose.yaml", "why": "a SQL Server image, but the taxonomy's sqlserver signals list no image: only packages and AddSqlServer(. Citing it as exact evidence is unsupported (sqlserver is already exact here through the package)" }
+  ]
+}

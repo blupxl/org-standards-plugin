@@ -10,7 +10,7 @@ public static class Resolver
 
     public static Resolution Resolve(
         string? id, Dictionary<string, string[]> filter, int index, SourceCall<QueryResult>[] calls,
-        Dictionary<string, string[]>? exclude = null)
+        Dictionary<string, string[]>? exclude = null, string[]? addedKinds = null, bool ancestryUnavailable = false)
     {
         filter = Filters.Clean(filter);
         var exclusions = Filters.Clean(exclude);
@@ -48,7 +48,30 @@ public static class Resolver
 
         return new Resolution(id, filter, sources, kept, conflicts, [], [], unknownValues,
             NotCovered(filter, resolved, unknownValues),
-            excluded.Select(pair => new ExcludedTopic(pair.Topic.Topic.Topic, pair.Topic.Source, pair.Reason!)).ToArray());
+            excluded.Select(pair => new ExcludedTopic(pair.Topic.Topic.Topic, pair.Topic.Source, pair.Reason!)).ToArray(),
+            addedKinds, ancestryUnavailable);
+    }
+
+    // Only a kind expands, so the taxonomy is fetched only when some request filters on one.
+    public static bool NeedsTaxonomy(IEnumerable<Dictionary<string, string[]>> filters) =>
+        filters.Any(filter => filter.ContainsKey(StandardFields.Kind));
+
+    // The filter to send the owners: the requested kinds plus their ancestors. With the taxonomy
+    // unavailable nothing expands, and Unavailable says the document must warn (only when a kind was asked for).
+    // A null taxonomy means it was not fetched because no request had a kind: nothing to expand.
+    public static (Dictionary<string, string[]> Filter, bool Unavailable) Broaden(Dictionary<string, string[]> filter, TaxonomyResult? taxonomy)
+    {
+        if (taxonomy is null)
+        {
+            return (filter, false);
+        }
+
+        if (taxonomy.Status == "unavailable")
+        {
+            return (filter, filter.ContainsKey(StandardFields.Kind));
+        }
+
+        return (Ancestry.Expand(filter, taxonomy.Categories), false);
     }
 
     // Which exclusion matches a topic ("topic", or "field = values"), or null if none does.
@@ -132,7 +155,7 @@ public static class Resolver
 
             if (winners.Count > 1)
             {
-                conflicts.Add($"\"{group.Key}\" is defined by {string.Join(" and ", winners.Select(w => w.Source).Distinct())}; each version is shown");
+                conflicts.Add($"\"{group.Key}\" is defined by {string.Join(" and ", winners.Select(winner => winner.Source).Distinct())}; each version is shown");
             }
 
             var replaces = specific.Count > 0 && general.Count > 0
@@ -200,31 +223,34 @@ public static class Resolver
         var wanted = Normalize(value);
         return known
             .Select(candidate => (Candidate: candidate, Normalized: Normalize(candidate)))
-            .Where(c => c.Normalized.Contains(wanted) || wanted.Contains(c.Normalized) ||
-                        Distance(c.Normalized, wanted) <= Math.Max(2, wanted.Length / 4))
-            .OrderBy(c => Distance(c.Normalized, wanted))
+            .Where(match => match.Normalized.Contains(wanted) || wanted.Contains(match.Normalized) ||
+                        Distance(match.Normalized, wanted) <= Math.Max(2, wanted.Length / 4))
+            .OrderBy(match => Distance(match.Normalized, wanted))
             .Take(3)
-            .Select(c => c.Candidate)
+            .Select(match => match.Candidate)
             .ToArray();
     }
 
     private static string Normalize(string value) =>
         new(value.ToLowerInvariant().Where(char.IsLetterOrDigit).ToArray());
 
-    private static int Distance(string a, string b)
+    // Levenshtein distance: the fewest single-character edits that turn one value into the other.
+    private static int Distance(string source, string target)
     {
-        var previous = Enumerable.Range(0, b.Length + 1).ToArray();
-        for (var i = 1; i <= a.Length; i++)
+        var previous = Enumerable.Range(0, target.Length + 1).ToArray();
+        for (var sourceIndex = 1; sourceIndex <= source.Length; sourceIndex++)
         {
-            var current = new int[b.Length + 1];
-            current[0] = i;
-            for (var j = 1; j <= b.Length; j++)
+            var current = new int[target.Length + 1];
+            current[0] = sourceIndex;
+            for (var targetIndex = 1; targetIndex <= target.Length; targetIndex++)
             {
-                var cost = a[i - 1] == b[j - 1] ? 0 : 1;
-                current[j] = Math.Min(Math.Min(current[j - 1] + 1, previous[j] + 1), previous[j - 1] + cost);
+                var substitution = source[sourceIndex - 1] == target[targetIndex - 1] ? 0 : 1;
+                current[targetIndex] = Math.Min(
+                    Math.Min(current[targetIndex - 1] + 1, previous[targetIndex] + 1),
+                    previous[targetIndex - 1] + substitution);
             }
             previous = current;
         }
-        return previous[b.Length];
+        return previous[target.Length];
     }
 }

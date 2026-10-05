@@ -33,15 +33,15 @@ public sealed class StandardsDbContext(DbContextOptions<StandardsDbContext> opti
     {
         modelBuilder.Entity<Topic>(topic =>
         {
-            topic.Property(t => t.Name).HasMaxLength(200);
-            topic.Property(t => t.Document).HasMaxLength(200);
-            topic.Property(t => t.Version).HasMaxLength(50);
-            topic.HasIndex(t => t.Name);
-            topic.HasMany(t => t.Tags).WithOne().HasForeignKey(t => t.TopicId).OnDelete(DeleteBehavior.Cascade);
+            topic.Property(entity => entity.Name).HasMaxLength(200);
+            topic.Property(entity => entity.Document).HasMaxLength(200);
+            topic.Property(entity => entity.Version).HasMaxLength(50);
+            topic.HasIndex(entity => entity.Name);
+            topic.HasMany(entity => entity.Tags).WithOne().HasForeignKey(entity => entity.TopicId).OnDelete(DeleteBehavior.Cascade);
 
             // Free-form extras (examples, reference tables) as JSON, so authors can add content
             // without a schema change.
-            topic.Property(t => t.Details)
+            topic.Property(entity => entity.Details)
                 .HasColumnType("jsonb")
                 .HasConversion(
                     details => JsonSerializer.Serialize(details, Json.Options),
@@ -54,9 +54,9 @@ public sealed class StandardsDbContext(DbContextOptions<StandardsDbContext> opti
 
         modelBuilder.Entity<TopicTag>(tag =>
         {
-            tag.Property(t => t.Field).HasMaxLength(100);
-            tag.Property(t => t.Value).HasMaxLength(200);
-            tag.HasIndex(t => new { t.Field, t.Value });
+            tag.Property(entity => entity.Field).HasMaxLength(100);
+            tag.Property(entity => entity.Value).HasMaxLength(200);
+            tag.HasIndex(entity => new { entity.Field, entity.Value });
         });
     }
 }

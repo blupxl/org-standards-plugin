@@ -1,0 +1,5 @@
+services:
+  db:
+    image: mongo:7
+  cache:
+    image: redis:7-alpine

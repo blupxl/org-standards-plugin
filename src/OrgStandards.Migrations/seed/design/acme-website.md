@@ -113,7 +113,7 @@ content.
 - MUST NOT remove focus outlines; the Acme and website classes provide visible focus styles.
 
 ## Footer
-- MUST include the line "© <current year> Acme. All rights reserved." and links to Privacy policy,
+- MUST include the line `© <current year> Acme. All rights reserved.` and links to Privacy policy,
   Sitemap and Contact.
 - Social links (LinkedIn, Facebook) MUST have an accessible name, such as
   `aria-label="Acme on LinkedIn"`.

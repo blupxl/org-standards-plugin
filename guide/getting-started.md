@@ -70,7 +70,7 @@ The first run pulls the Postgres image, so it takes a minute. Startup order is h
 2. **migrations** migrates each database and loads the Markdown documents in
    `OrgStandards.Migrations/seed/<owner>/`, replacing what was there. The files are the source of
    truth. If it fails, it exits non-zero and nothing downstream starts.
-3. **design**, **platform** and **security** start once migrations have finished.
+3. **design**, **platform**, **security** and **data** start once migrations have finished.
 4. **gateway** listens on `http://localhost:5480/mcp`.
 5. **acme-web**, a stand-in for Acme's design-system site, at `http://localhost:5500`. It owns the
    stylesheet the design standards require (`/css/acme.css`, plus `/css/xyz.css` for the XYZ
@@ -90,7 +90,7 @@ With the AppHost running, from the repository root:
 claude --plugin-dir ./plugins/my-company
 ```
 
-This loads the plugin (skills, agent, and MCP tools) for that session only. Nothing is installed or
+This loads the plugin (skills, agents, the plan hook and the MCP tools) for that session only. Nothing is installed or
 saved, so there's nothing to undo. Loaded this way the plugin is named after its folder,
 `my-company`. To use it in your other projects, [install it](install.md).
 
@@ -99,7 +99,9 @@ Things to ask:
 - *"What standards are available? Use the standards tools."*
 - *"I'm building a web API for xyz-public-app. Which standards apply?"*
 - *"Which colors should I use for a new settings page?"*
-- In another repository: *"Assess this project against our standards"* (or `/acme:assess`).
+- *"Start a new orders API with data access on PostgreSQL."* (Claude offers the approved recipes.)
+- In another repository, with the plugin [installed](install.md): *"Assess this project against
+  our standards"* (or `/acme:assess`).
 
 ## Troubleshooting
 

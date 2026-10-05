@@ -59,13 +59,13 @@ public sealed class StandardsMarkdownTests : IDisposable
             - MUST use acme-button.
             """);
 
-        Assert.Equal(["Colors", "Components"], topics.Select(t => t.Name));
+        Assert.Equal(["Colors", "Components"], topics.Select(topic => topic.Name));
         var colors = topics[0];
         Assert.Equal("- MUST use tokens.\n\nWhy: one place to change the palette.", colors.Body);
         var detail = Assert.Single(colors.Details);
         Assert.Equal("Tokens", detail.Title);
         Assert.Equal("| Token | Value |", detail.Markdown);
-        Assert.DoesNotContain(topics, t => t.Body.Contains("ignored"));
+        Assert.DoesNotContain(topics, topic => topic.Body.Contains("ignored"));
     }
 
     [Fact]
@@ -114,13 +114,13 @@ public sealed class StandardsMarkdownTests : IDisposable
             - MUST use the standard resilience handler.
             """);
 
-        var tests = topics.Single(t => t.Name == "Tests in .NET");
+        var tests = topics.Single(topic => topic.Name == "Tests in .NET");
         Assert.Equal(["testing"], TagValues(tests, "kind"));
         Assert.Equal(["dotnet"], TagValues(tests, "runtime"));     // inherited
         Assert.Empty(TagValues(tests, "concern"));
         Assert.Equal("- MUST use xUnit.", tests.Body);               // the tags line isn't part of the rules
 
-        var resilience = topics.Single(t => t.Name == "Resilience handler in .NET");
+        var resilience = topics.Single(topic => topic.Name == "Resilience handler in .NET");
         Assert.Equal(["resilience"], TagValues(resilience, "concern"));
         Assert.Equal(["backend", "api"], TagValues(resilience, "kind"));
     }

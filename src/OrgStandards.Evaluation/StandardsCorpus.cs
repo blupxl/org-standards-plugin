@@ -38,7 +38,7 @@ public sealed class StandardsCorpus
         return new StandardsCorpus
         {
             Topics = topics,
-            Fields = StandardMatcher.FieldsOf(topics.Select(t => t.Topic)),
+            Fields = StandardMatcher.FieldsOf(topics.Select(owned => owned.Topic)),
             Owners = owners.Select(Path.GetFileName).Select(name => name!).ToArray(),
             Fingerprint = Hash(files.Select(file => Path.GetRelativePath(seedFolder, file) + "\n" + File.ReadAllText(file).Replace("\r\n", "\n"))),
         };

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using OrgStandards.Contracts;
 using OrgStandards.Data;
 using OrgStandards.Gateway;
 
@@ -77,8 +78,10 @@ public sealed partial class TagStrategy(Taxonomy taxonomy, bool acceptSuggestion
             filter[facet.Key] = facet.ToArray();
         }
 
+        // The request is reported as made; matching uses it with kinds widened to their ancestors.
+        var expanded = Ancestry.Expand(filter, taxonomy.ToContract());
         var matches = corpus.Topics
-            .Where(owned => StandardMatcher.Matches(owned.Topic.Tags, filter))
+            .Where(owned => StandardMatcher.Matches(owned.Topic.Tags, expanded))
             .Select(owned => (owned.Source, owned.Topic));
 
         var (resolved, _) = Resolver.Overlay(matches);

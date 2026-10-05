@@ -22,9 +22,15 @@ The task, if one was given: $ARGUMENTS
 
 ## 1. Work out the scope
 
-If the repository has `.claude/standards.json` (set by the architects), start from its `scope`,
-and narrow or extend it for the task. (Older repositories declare the scope in `.claude/CLAUDE.md`
-instead.) Otherwise, decide what the work is for:
+If the repository has `.claude/standards.json` (written by the init skill, kept by the
+architects), start from it: for each component the task touches (`components`, matched by path),
+use that component's `scope` plus the file's `product`, and narrow or extend it for the task. When
+the task may add something the declared scope doesn't list (a new dependency, runtime or pattern),
+follow the classify skill for the task's components and compare. A file with a single `scope`
+applies it to the whole repository. (Older repositories declare the scope in
+`.claude/CLAUDE.md` instead.) Without one, suggest running the init skill, then work out the scope by following the classify
+skill for this task: it returns the filter to use, with evidence, and the questions to ask. The
+fields it fills in mean:
 
 - **product**: which product this is. Look at the repository name, README and solution/project
   names. If it isn't clear, ask the user. Don't guess a product.
@@ -36,9 +42,16 @@ instead.) Otherwise, decide what the work is for:
   question ("the security rules for this API").
 - **runtime**: what the code runs on (`dotnet` for C#/.NET, `node` for JavaScript or TypeScript
   servers). Name it whenever the work has one: standards written for a runtime come back only when
-  it's named, and standards without one always apply. Tell it from the files (`*.csproj` means
-  `dotnet`; a `package.json` with server code means `node`); if a component's runtime isn't clear,
-  ask.
+  it's named, and standards without one always apply. The classify skill says how to tell it from
+  the files; if a component's runtime isn't clear, ask.
+- **uses** and **pattern**: what the component depends on (`postgres`, `kafka`, `eventuous`, …) and
+  the architecture it follows (`ddd`, `cqrs`, `event-sourcing`). Like runtime, standards written
+  for one come back only when it's named, so name every one the component has. They're in
+  `.claude/standards.json`; without it, follow the classify skill to infer them, and ask about
+  anything it can't settle rather than guess.
+  When `.claude/standards.json` exists but the task adds something it doesn't list (a new
+  dependency), the classify skill reports it as a difference: include it in this task's filter and
+  offer to record it, as in step 4 of "New work: a new project, or a new capability" below.
 
 **Exclusions** come only from the `exclude` list in `.claude/standards.json`. Each entry names a
 field and values (or `topic` and topic names) and a `reason`. Pass them to `get_standards` as the
@@ -48,6 +61,27 @@ working: say that exclusions are the architects' decision, made in `.claude/stan
 
 Call `list_standards` first and use only field names and values it returns. If the product the
 user named isn't listed, say so and ask. Don't substitute a close match without confirmation.
+
+### New work: a new project, or a new capability
+
+When the task starts a project, or adds a capability a component doesn't have yet (data access,
+messaging, …), use the owners' **recipes**: approved ways to add it, with packages, wiring,
+configuration and examples. You don't need to be asked; this is part of building to the standards.
+
+1. **Ask what the work needs**, a few questions at a time, with your best guess first: for example
+   "Will it read or write a database?", then "Which one?" Use only values `list_standards` returns.
+2. **List the approved recipes**: `get_standards` with `headlines: true` and
+   `{ "template": ["recipe"], "kind": [...], "runtime": [...], "uses": [<the answers>] }`. The
+   headlines give each recipe's name and owner, what it adds (`adds: ef-core`), and which one is
+   marked **recommended by the owners**. Without headlines you get the whole document.
+3. **Let the user choose**, the recommended recipe first. Another approved recipe is fine; anything
+   not listed isn't approved. Then fetch the chosen one with `get_topic` and the same filter,
+   `template: ["recipe"]` included (without it the recipe isn't found), and follow its packages,
+   wiring and example.
+4. **Record the choice** in `.claude/standards.json`: add the recipe's `adds` and the answers to the
+   component's `uses` (for example `["postgres", "ef-core"]`). Without the file, write it as the
+   init skill would (description, components, scopes), after showing it to the user. Planning and
+   other agents read this file, so the decision is known before anything else is built.
 
 ## 2. Get the standards
 
@@ -73,9 +107,10 @@ so when your work falls into a gap.
 - **MUST / MUST NOT** are requirements. If one can't be met, stop and explain why before going
   further. Never quietly work around it.
 - **SHOULD** is the default. You may deviate for a good reason, and you must state the reason.
-- A topic that says more is available (examples, reference tables such as color tokens): call
-  `get_topic` with that topic name and the same filter when the task needs the detail, for example
-  before writing UI code that uses colors. Don't reconstruct the detail from memory.
+- A topic that says more is available ("More in this topic": examples, reference tables such as
+  color tokens): call `get_topic` with that topic name and the same filter when the task needs the
+  detail, for example before writing UI code that uses colors. Don't reconstruct the detail from
+  memory. Call `get_topic` only for that detail, never to re-read rules already in the document.
 - Configuration comes from configuration keys the standards name. Never hard-code hosts or
   connection strings.
 - If existing code in the repository contradicts a standard, follow the standard in new code and
@@ -87,15 +122,21 @@ so when your work falls into a gap.
 
 ## 4. Check the work
 
-When the change is done, hand it to the `standards-reviewer` agent with:
+When the code is done and its tests pass, hand it to the `standards-reviewer` agent before you
+write the README, CLAUDE.md or other docs: run it in the background and write the docs meanwhile, or
+review first. Give it:
 
-- the exact filter(s) and exclusions you used for `get_standards`, and
-- the list of files you created or changed.
+- the exact filter(s) and exclusions you used for `get_standards`,
+- the source, configuration and test files you created or changed, not generated ones (`bin/`,
+  `obj/`, migrations and model snapshots, lock files), and
+- the decisions settled in the plan check, if there was one (the checked plan's steps and the
+  answers given in this session). They're context for the reviewer, not permission to break a MUST.
 
 The reviewer fetches the standards itself and checks the files independently. Pass on its findings
-as they are. If it reports a MUST failure, fix it, or explain to the user why it can't be fixed, and
-hand the fixed files back to it. Keep each round's result (failures, fixes, and the final result)
-for the record.
+as they are. If it reports a MUST failure, fix it, or explain to the user why it can't be fixed.
+For the next round, give it the same filter(s) and exclusions, its previous report, and only the
+files you changed since: it checks the earlier failures and those changes against the rules in the
+report. Keep each round's result (failures, fixes, and the final result) for the record.
 
 ## 5. Report
 
@@ -114,49 +155,38 @@ Write a record of what you did with the standards, so it outlives this session a
 pull request with the change. Write it when the work is done (after the last review round), and
 skip it for questions that changed no files.
 
-Write a new folder, `docs/standards/implementations/<YYYY-MM-DD-HHmm>/` (local time; create the
-folders if needed), and never change an earlier one:
+Write `implementation.json` in a new folder, `docs/standards/implementations/<YYYY-MM-DD-HHmm>/`
+(local time; create the folders if needed), and never change an earlier one. It's the one record:
+don't write a Markdown copy. It records what happened (scope, standards applied, decisions,
+deviations, gaps, review rounds) and points to the checked plan or spec for the design instead of
+restating it:
 
-- `implementation.md`, for people:
+```json
+{
+  "run": "2026-10-04-1530", "commit": "a1b2c3d", "plugin": "acme",
+  "task": "Orders API with order lookup and a paged order history",
+  "plan": "docs/superpowers/plans/2026-10-04-orders-api.md",
+  "scope": [{ "component": "api", "filter": { "kind": ["api", "backend"], "runtime": ["dotnet"] }, "source": "decided" }],
+  "exclusions": [],
+  "applied": [{ "topic": "Settings", "owner": "platform", "version": "1.1", "layer": "general" }],
+  "decisions": [{ "decision": "Named the tracing source Acme.Orders", "why": "Company name taken from the product name", "confirm": true }],
+  "shouldNotFollowed": [{ "id": "api/Caching#1", "rule": "cache read-heavy responses", "reason": "The data comes from an in-memory stub for now" }],
+  "gaps": ["..."],
+  "review": [
+    { "round": 1, "result": "fail", "failures": [{ "id": "api/Settings#2", "rule": "no key strings outside Program.cs", "evidence": ["src/Orders.Api/Program.cs:27"], "fix": "read through a typed options class" }] },
+    { "round": 2, "result": "pass" }
+  ],
+  "files": ["src/Orders.Api/Program.cs"],
+  "questions": ["..."]
+}
+```
 
-  ```
-  Standards record: <the task, in a line>
-  Date · commit before the work (git rev-parse --short HEAD, or "not a git repository") · plugin
-  Scope: <per component: kind, runtime, product; from .claude/standards.json or decided, and why>
-  Exclusions: <approved ones from .claude/standards.json, or "none">
+`commit` is the commit before the work (`git rev-parse --short HEAD`, or "not a git repository").
+`plan` is the checked plan or spec the work followed, or `null` when there was none. Mark
+`"confirm": true` on the decisions the user should confirm.
 
-  Standards applied: <topic (owner, version, layer)>, grouped by component
-  Decisions made without asking: <decision: why> [confirm] for the ones the user should confirm
-  SHOULD not followed: <topic #n: rule: reason>
-  Gaps: <what the work touched that no standard covers>
-  Review: <round 1: FAIL (n MUST): topic #n: rule. file:line → fix> ... <final: PASS | FAIL>
-  Files: <created or changed>
-  Open questions: <for the user or the architects>
-  ```
-
-- `implementation.json`: the same, as data:
-
-  ```json
-  {
-    "run": "2026-10-04-1530", "commit": "a1b2c3d", "plugin": "acme",
-    "task": "Orders API with order lookup and a paged order history",
-    "scope": [{ "component": "api", "filter": { "kind": ["api", "backend"], "runtime": ["dotnet"] }, "source": "decided" }],
-    "exclusions": [],
-    "applied": [{ "topic": "Settings", "owner": "platform", "version": "1.1", "layer": "general" }],
-    "decisions": [{ "decision": "Named the tracing source Acme.Orders", "why": "Company name taken from the product name", "confirm": true }],
-    "shouldNotFollowed": [{ "id": "api/Caching#1", "rule": "cache read-heavy responses", "reason": "The data comes from an in-memory stub for now" }],
-    "gaps": ["..."],
-    "review": [
-      { "round": 1, "result": "fail", "failures": [{ "id": "api/Settings#2", "rule": "no key strings outside Program.cs", "evidence": ["src/Orders.Api/Program.cs:27"], "fix": "read through a typed options class" }] },
-      { "round": 2, "result": "pass" }
-    ],
-    "files": ["src/Orders.Api/Program.cs"],
-    "questions": ["..."]
-  }
-  ```
-
-  Finding ids are the same as in an assessment, `<component>/<topic>#<n>` with the reviewer's rule
-  numbers, so a later assessment can be lined up with this record.
+Finding ids are the same as in an assessment, `<component>/<topic>#<n>` with the reviewer's rule
+numbers, so a later assessment can be lined up with this record.
 
 Tell the user the folder, and that committing it with the change puts the record in the pull
 request.

@@ -1,0 +1,20 @@
+{
+  "fixture": "stock-service",
+  "components": [
+    {
+      "name": "stock-service",
+      "path": ".",
+      "exact": [
+        { "category": "node", "facet": "runtime", "evidence": "package.json", "where": "package.json" },
+        { "category": "mongodb", "facet": "uses", "evidence": "mongodb", "where": "package.json" },
+        { "category": "mongodb", "facet": "uses", "evidence": "mongo:7", "where": "compose.yaml" },
+        { "category": "redis", "facet": "uses", "evidence": "ioredis", "where": "package.json" },
+        { "category": "redis", "facet": "uses", "evidence": "redis:7-alpine", "where": "compose.yaml" }
+      ]
+    }
+  ],
+  "distractors": [
+    { "text": "SQL Server", "where": "README.md", "why": "mentioned in prose only; no mssql package, image or code" },
+    { "text": "Kafka", "where": "README.md", "why": "mentioned in prose only; no package, image or code" }
+  ]
+}

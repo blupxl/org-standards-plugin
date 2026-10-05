@@ -61,11 +61,14 @@ These came out of pushing back on earlier versions of the design.
 
 ```
 Claude Code
-  └─ plugin (skill + reviewer agent + MCP config)
-       └─ http://localhost:5480/mcp ── gateway (front door: list_standards, get_standards, get_topic)
+  └─ plugin (skills + agents + plan hook + MCP config)
+       └─ http://localhost:5480/mcp ── gateway (front door: list_standards, get_standards,
+                                         │        get_topic, get_taxonomy)
                                          ├─ design    MCP server ── design database
                                          │     └─ points to Acme.Web (design-system site, :5500)
-                                         └─ platform  MCP server ── platform database
+                                         ├─ platform  MCP server ── platform database (serves the taxonomy)
+                                         ├─ security  MCP server ── security database
+                                         └─ data      MCP server ── data database
 ```
 
 - **One MCP server per owner.** The same project runs once per owner, with its own database and
@@ -125,6 +128,21 @@ the document is instructions, not data: it has to say how far it can be trusted.
   the same name replaces the general one, and says what it replaced. Details are inherited by title,
   so a product that restates a rule keeps the general example unless it provides its own. Without
   a product filter, only general topics apply.
+- **`broader` means "is a kind of", and only kinds expand.** Every rule for a parent applies to
+  its child, so the gateway adds a kind's ancestors, to the root, to each request. Concerns don't
+  expand: a standard about both accessibility and ux carries both tags. Qualifiers have no
+  ancestry. `api` and `data-access` stay under `backend`, since an API is a backend. `ui` is not an
+  ancestor, because it means a web page, a Windows form or a service depending on the project;
+  `styling` and `website` no longer name it. The response says which kinds were added but not why.
+  *Rejected:* a "via css" explanation per rule (more text for the agent to read, little gain), and
+  expanding one level only (a rule for `styling` would miss `sass`).
+- **Exact evidence stays with Claude, because the measurement found no problem.** A reviewer
+  suggested moving exact signal matching (packages, images, Aspire calls, file patterns) into a
+  script. Before building one, the classifier ran three times on each of five invented projects
+  (`tests/fixtures/`, frozen at one commit), scored only on exact evidence: 465 scored pairs, 0
+  misses, 0 claims of evidence that wasn't there, 0 differences between runs, and none of the 13
+  decoys (commented-out packages, near-miss names) counted. About $0.30 a run. So no matcher was
+  built; the fixtures stay, to repeat the check if the taxonomy or the classifier changes.
 - The same topic defined by two owners in the same layer is returned twice and flagged as a
   conflict, never silently picked.
 - `list_standards` is discovery. It shows every field, product and value, and its output becomes
@@ -174,8 +192,57 @@ the document is instructions, not data: it has to say how far it can be trusted.
   run", never "fixed": reviewers vary between runs, and only the data can tell variance from
   progress. *Rejected:* keeping the report in the console only, which couldn't be compared; and
   one report overwritten each run, which left the history to git.
-- **Implementation work is recorded the same way.** The standards skill writes
-  `docs/standards/implementations/<YYYY-MM-DD-HHmm>/` when it's done: the standards applied, the
+- **Dependencies and patterns qualify, like runtimes.** `uses` (`postgres`, `kafka`, `eventuous`,
+  …) and `pattern` (`ddd`, `cqrs`, `event-sourcing`) are facets too: a standard about one reaches
+  only components that name it, and they layer (general → pattern → technology, with `implements`
+  links between the last two). Patterns are kept apart from dependencies because one pattern can
+  run on different technologies: event sourcing on Eventuous or on Kafka shares the pattern's rules.
+  `init` suggests both from facts (packages, Aspire resources, code structure), and the user
+  confirms; nothing is implied on the server.
+- **New work starts from recipes, and every agent sees the decisions.** Owners write recipes
+  (`template: recipe`): approved ways to add a capability, one topic per option, one marked
+  recommended, each saying what it adds (`adds: ef-core`). The standards skill infers when work is
+  new, asks what it needs, offers the approved recipes, follows the chosen one, and records the
+  choice in `.claude/standards.json`, so the rules for that choice apply from then on. The
+  gateway's server instructions tell every agent in the session, planning skills from other
+  plugins included, to read that file and fetch standards and recipes before planning. *Rejected:*
+  a separate command for new projects (Claude already consults the standards when it creates one);
+  and a recipe's framework in `uses`, which matched any recipe sharing the framework.
+- **Responses say where they live, using published conventions only.** Every resource carries an
+  absolute `self` URL; a page carries `self`, `next` and `items`; a create returns `201` with
+  `Location` (RFC 9110); Problem Details set `instance` (RFC 9457). In .NET, links come from
+  `LinkGenerator` and endpoint names, the same names that become each operation's `operationId`,
+  so one `.WithName()` serves the link and the documentation. Every API serves its description at
+  `/openapi/v1.json` and Scalar at `/scalar/v1`, the defaults, so a developer always knows where
+  the docs are. *Rejected:* envelopes such as HAL or JSON:API, which reshape every payload (Zalando's
+  guidelines dropped HAL for that reason); and Azure's `value`/`nextLink`, which leaves no room for
+  `self`.
+- **One set of model metadata drives validation and documentation.** Models carry XML summaries,
+  a realistic `<example>`, and the data annotations ASP.NET Core's OpenAPI generator reads
+  (`[Required]`, `[Range]`, `[MinLength]`, `[MaxLength]`, `[RegularExpression]`, `[DefaultValue]`),
+  which `AddValidation()` also enforces, so the explorer shows exactly what the API accepts, with
+  real-looking data. Found while writing the rule: `[StringLength]`, `[EmailAddress]` and `[Url]`
+  validate but don't reach the description, so the validation recipe now uses the mapped ones.
+- **Names say what things are.** C# follows Microsoft's naming conventions, in whole words: no
+  `Dto` suffix and no shortened variables. An API takes a `<Operation>Request` and returns a
+  `<Thing>Response` (`PlaceOrderRequest` in, `OrderResponse` out). Every example in the standards
+  and recipes was renamed to match, since agents copy examples more faithfully than rules.
+- **Plans are checked before they're built, on the developer's machine.** A local hook notices a
+  finished plan (plan mode, or a Markdown file under a `plans` or `specs` folder) and asks for the
+  plan check once per version of the plan, at most three times in a row for one plan; it makes no network calls. The check classifies the plan, fetches
+  only the standards its steps touch (headlines first), and proposes changes the developer approves,
+  which rewrite the plan's steps in place. Only filters and topic names reach the server, which
+  keeps no state, so moving it to a central host is a URL change. Classification is one skill used
+  by every caller, with the taxonomy served by its owner and scored on the golden set.
+- **A project is described once, by `init`.** It scans the project (what it does, its components,
+  their kinds and runtimes, the likely product), confirms each answer through a short
+  questionnaire with the scan's answer as the default (or accepts them all in `auto` mode, marked
+  as assumed), and writes `.claude/standards.json` and a marked section of `.claude/CLAUDE.md`.
+  Scopes are **per component**, because one repository can hold a .NET API and a JavaScript front
+  end, and one merged scope would give each the other's rules.
+- **Implementation work is recorded the same way.** The standards skill writes one file,
+  `implementation.json`, in `docs/standards/implementations/<YYYY-MM-DD-HHmm>/` when it's done: the
+  standards applied, the
   **decisions it made without asking** (a guessed company name, a skipped SHOULD, a change to
   template code to meet a rule), each review round, and open questions. Committed with the change,
   the pull request carries its own standards record. Found when a one-prompt build made sensible
@@ -235,6 +302,37 @@ apply:
 In that run the repository declared no product, so the implementer inferred the website product
 from the ticket and said so. A website repository should declare it, so nothing is inferred.
 
+A third run built a new API from one prompt (a reading list on .NET, Aspire and PostgreSQL). It
+took 53 minutes, 48 of them working; about 19½ were the plugin's own steps (standards, plan check,
+review, record). The trace showed where: a plan check that recommended keeping a rule break (which
+the reviewer then failed, forcing a second loop), a reviewer that read generated files and
+refetched everything in round two, a 30 KB document fetched just to list recipes, a plan check that
+fetched nearly every topic one by one, and the implementation record written twice. All five are
+addressed in the plugin's instructions; the run hasn't been repeated yet to measure the effect. An independent review of the app it built also traced several defects to our own standards
+(links built from the request's Host header, a route invented to avoid a verb, read-change-save
+state updates); the standards now say how to avoid them.
+
+## Known gaps and next revision
+
+What's measured and not yet done, in the order we'd take it:
+
+- **Headlines first in the standards skill.** The plan check and review now load only what a
+  change touches, but the standards skill still loads each touched component's whole document into
+  the main session, where it is re-read on every later call (about 17K tokens over about 99 calls
+  in the run above). The fix is the plan check's pattern: headlines, then only the topics the
+  change touches.
+- **Measure an everyday change.** The 53-minute run was a new project, the worst case: every topic
+  applies and every file is new. The cost of a small change to an existing project hasn't been
+  measured yet; it's the next run.
+- **Plan mode's hook input is confirmed only headless.** The hook reads both possible fields of
+  `ExitPlanMode`'s input to be safe; one interactive check settles it.
+- **Not enforced by tests.** That the plan check never recommends breaking a MUST, and the "about
+  10 topics" point at which it fetches once instead of topic by topic, are instructions to the
+  model. A plan-check golden set (plans with known gaps) would measure both.
+- **Owner policy, left as it is.** The example recipes make every API an Aspire project with a
+  separate migration service, even a small one. That's a choice for the standards' owners, not
+  the plugin.
+
 ## What a production version would need
 
 **Quality**
@@ -244,8 +342,8 @@ from the ticket and said so. A website repository should declare it, so nothing 
   records the commit and the standards it measured. The tag-only baseline is recorded so search
   can be judged against it.
 - **Broader tests.** Unit tests cover the gateway's rules (matching, overlay, inherited
-  details, validation, the document header, the Markdown parser, link resolution), and six
-  integration tests run the whole chain through the AppHost. Missing: failure-path integration
+  details, broader kinds, validation, the document header, the Markdown parser, link
+  resolution), and 13 integration tests run the whole chain through the AppHost. Missing: failure-path integration
   tests (an owner going down mid-request) and tests for the migration app's error handling.
 - **Trigger and behavior evaluation.** The skill was tested with a handful of prompts. A real
   rollout needs a repeatable set of should-trigger and shouldn't-trigger prompts, run on every
@@ -265,10 +363,7 @@ from the ticket and said so. A website repository should declare it, so nothing 
 
 - **Filtering and ownership are a larger design problem than this project tackles.** For
   example, finding and routing *missing* standards (an area with no topic under a scope) would need
-  a precise definition of which areas are "in scope", a registry of areas with owners, and per-topic
-  tags.
-- **Per-document tags.** Every topic in a file shares its tags, so a file tagged with two areas
-  answers for both. Per-topic tags would fix it.
+  a precise definition of which areas are "in scope", and a registry of areas with owners.
 - **Report wording.** "Not covered" (requested, unanswered) isn't yet separated from "not addressed
   by the standards".
 - **Complete reference tables.** The stylesheets define more tokens than the Colors topics list.

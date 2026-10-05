@@ -1,31 +1,74 @@
 ---
 title: .NET services
-version: 1.2
+version: 1.7
 runtime: dotnet
 kind: [backend, api, configuration, data-access, testing]
 ---
 <!-- PLACEHOLDER standards that exercise the format. Replace with real ones. How the general
      platform standards are met in .NET; they reach only projects that name the dotnet runtime. -->
 
+## Naming in .NET
+- Names MUST follow Microsoft's C# identifier naming rules and conventions: PascalCase for
+  namespaces, types, methods, properties, events and constants; camelCase for parameters and
+  locals; `_camelCase` for private fields; interfaces start with `I`; async methods end in
+  `Async` (except endpoint handlers, which match their endpoint's name).
+- Names MUST say what the thing is, in whole words. MUST NOT abbreviate or contract
+  (`customerAddress`, not `custAddr`; `httpContext`, not `ctx`; `database`, not `db`), and MUST NOT
+  use single letters outside a loop counter. Long, explicit names are fine. Acronyms take
+  Microsoft's casing (`Id`, `Http`, `Json`, `IO`).
+- MUST NOT name a type after how it moves data: no `Dto` or `DataTransferObject` suffix, no
+  `ToDto()`. An API's input is named for the operation, with `Request` (`PlaceOrderRequest`,
+  `SendEmailRequest`); its output is named for what it returns, with `Response` (`OrderResponse`,
+  `EmailResponse`), and maps with `ToResponse()`.
+
+Why: code is read far more often than it's written. A name that says what it holds needs no
+comment, and the same vocabulary in every service means nobody has to learn a team's shorthand.
+
+### Examples
+| Instead of | Write |
+|---|---|
+| `OrderDto`, `order.ToDto()` | `OrderResponse`, `order.ToResponse()` |
+| `PlaceOrder` (an HTTP body), `OrderInput` | `PlaceOrderRequest` |
+| `OrdersDbContext db`, `LinkGenerator lg`, `HttpContext ctx` | `OrdersDbContext database`, `LinkGenerator linkGenerator`, `HttpContext httpContext` |
+| `orders.Where(o => o.Total > 0)` | `orders.Where(order => order.Total > 0)` |
+| `IOrderRepo`, `OrderSvc`, `CfgHelper` | `IOrderRepository`, `OrderService`, a name for what it does |
+
+Source: Microsoft Learn, "C# identifier naming rules and conventions" and the .NET Framework Design
+Guidelines' general naming conventions.
+
 ## Problem details in .NET
 <!-- tags: { kind: [api], implements: [Errors] } -->
 - Services MUST register `builder.Services.AddProblemDetails()` and the exception handler
   (`app.UseExceptionHandler()`), so every error, including unhandled ones, is a Problem Details
   response.
+- Bad input found in a handler MUST return `TypedResults.ValidationProblem(errors)`, not
+  `Problem(statusCode: 400)` or `BadRequest("…")`, so it has the same shape as a validation failure.
 
 Why: one registration covers every endpoint; a handler written per endpoint misses some.
+`ValidationProblem` goes through the same Problem Details service as validation, so a `400` from a
+handler gets the same `errors` map, `instance` and `traceId`.
 
 ## OpenAPI in .NET
 <!-- tags: { kind: [api], concern: [documentation], implements: [API description] } -->
 - APIs MUST generate their OpenAPI description with the built-in `Microsoft.AspNetCore.OpenApi`
   (`builder.Services.AddOpenApi()`, `app.MapOpenApi()`). MUST NOT add Swashbuckle.
-- APIs MUST serve the Scalar API explorer (`Scalar.AspNetCore`, `app.MapScalarApiReference()`), at
-  `/scalar/v1` by default.
+- APIs MUST serve the Scalar API explorer (`Scalar.AspNetCore`, `app.MapScalarApiReference()`) at
+  its default address, `/scalar/v1`, and the description at its default, `/openapi/v1.json`. MUST
+  NOT change either route.
+- Every endpoint MUST call `.WithName()`, `.WithSummary()` and `.WithTags()`, and return
+  `TypedResults` (or declare `.Produces<T>()` and `.ProducesProblem()`) so every response appears
+  in the description.
+- Each status code MUST be declared once. MUST NOT combine `.ProducesValidationProblem()` with
+  `.ProducesProblem(400)`: both describe `400`, and only one of them appears in the description.
+- A `PATCH` endpoint MUST declare its body's media type, `.Accepts<T>("application/merge-patch+json")`,
+  so the description shows the body callers send.
+- The AppHost SHOULD link each API's explorer in the dashboard: `.WithUrl("/scalar/v1", "API
+  reference")`.
 - Both MUST be switched on by a setting (for example `OpenApi:Enabled`), not by checking the
   environment name (see the Environments standard).
 
-Why: one explorer across every API, built on the description ASP.NET Core generates itself;
-Swashbuckle is no longer part of the templates.
+Why: one explorer, at one address, across every API, built on the description ASP.NET Core
+generates itself; Swashbuckle is no longer part of the templates.
 
 ### Example
 ```csharp
@@ -38,26 +81,169 @@ if (app.Configuration.GetValue<bool>("OpenApi:Enabled"))
     app.MapOpenApi();                 // /openapi/v1.json
     app.MapScalarApiReference();      // /scalar/v1
 }
+
+app.MapGroup("/v1/orders").WithTags("Orders")
+    .MapGet("/{id:guid}", GetOrder)
+    .WithName("GetOrder")
+    .WithSummary("Gets one order");
+```
+
+## Model documentation in .NET
+<!-- tags: { kind: [api], concern: [documentation], implements: [Model documentation] } -->
+- The API project and every project that holds its models MUST set
+  `<GenerateDocumentationFile>true</GenerateDocumentationFile>`, and every model and property MUST
+  have an XML `<summary>`; ASP.NET Core puts them in the OpenAPI description.
+- Every request and response model MUST have an `<example>` with realistic JSON. Endpoint
+  parameters MAY carry `example="…"` on their `<param>`.
+- Constraints MUST use the data annotations the OpenAPI generator reads: `[Required]`, `[Range]`,
+  `[MinLength]`, `[MaxLength]`, `[RegularExpression]`, `[DefaultValue]`. `[StringLength]`,
+  `[EmailAddress]` and `[Url]` validate but don't appear in the description, so a length or format
+  MUST also be declared with one of the above.
+- Models MUST document properties with their own XML comments, so prefer records with properties
+  (`public required Guid Id { get; init; }`) over positional records, whose parameters can't carry
+  a `<summary>` of their own.
+- Nullable reference types MUST be on, and enumerations MUST use `JsonStringEnumConverter`.
+
+Why: one set of annotations drives both validation (`AddValidation()`) and the description, so what
+the explorer shows is what the API enforces.
+
+### Example
+```csharp
+/// <summary>An order placed by a customer.</summary>
+/// <example>
+/// {"self":"https://api.acme.example/v1/orders/0f8fad5b-d9cb-469f-a165-70867728950e",
+///  "id":"0f8fad5b-d9cb-469f-a165-70867728950e","customerId":"7c9e6679-7425-40de-944b-e07fc1f90ae7",
+///  "status":"Placed","total":18.50}
+/// </example>
+public sealed record OrderResponse
+{
+    /// <summary>This order's own URL.</summary>
+    public required string Self { get; init; }
+
+    /// <summary>The order's id.</summary>
+    public required Guid Id { get; init; }
+
+    /// <summary>The customer who placed it.</summary>
+    public required Guid CustomerId { get; init; }
+
+    /// <summary>Where the order is in its lifecycle.</summary>
+    public required OrderStatus Status { get; init; }
+
+    /// <summary>The total, in the customer's currency.</summary>
+    [Range(0, 1_000_000)]
+    public required decimal Total { get; init; }
+}
+
+/// <summary>A request to place an order.</summary>
+/// <example>{"customerId":"7c9e6679-7425-40de-944b-e07fc1f90ae7","sku":"MUG-RED","quantity":2}</example>
+public sealed record PlaceOrderRequest
+{
+    /// <summary>The customer placing the order.</summary>
+    [Required]
+    public required Guid CustomerId { get; init; }
+
+    /// <summary>The product's stock-keeping unit.</summary>
+    [Required, MaxLength(32), RegularExpression("^[A-Z0-9-]+$")]
+    public required string Sku { get; init; }
+
+    /// <summary>How many to order.</summary>
+    [Range(1, 100)]
+    public required int Quantity { get; init; }
+}
+```
+
+## Resource locations in .NET
+<!-- tags: { kind: [api], concern: [documentation, security], implements: [Resource locations] } -->
+- Links MUST be built with `LinkGenerator.GetUriByName(httpContext, "<endpoint name>", values)`,
+  from the endpoint's name, never by concatenating strings.
+- MUST NOT leave `"AllowedHosts": "*"` in a deployed environment. Each environment MUST list the
+  hosts it serves in `AllowedHosts`, including the host its health probes call.
+- Problem Details MUST set `instance` in one place: `AddProblemDetails` with `CustomizeProblemDetails`.
+- Behind a proxy, MUST use forwarded headers from trusted proxies only, so absolute URLs carry the
+  public host and scheme. When it forwards `X-Forwarded-Host`, MUST also set
+  `ForwardedHeadersOptions.AllowedHosts` to the public hosts.
+
+Why: endpoint names are already required for the description; the same names make every link
+correct after a route changes. Links and `instance` are built from the request's `Host` header, so
+with every host allowed, a caller chooses the host in them (host header injection). A request for
+any other host is refused with `400`, so a probe that calls by address fails until its host is listed.
+
+### Example
+```jsonc
+// The production environment's configuration (or AllowedHosts=... as a variable). The internal
+// name is the one the health probes call.
+{ "AllowedHosts": "api.acme.example;orders-api.internal" }
+```
+
+```csharp
+// Program.cs
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
+    context.ProblemDetails.Instance ??= context.HttpContext.Request.GetEncodedUrl());
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+        | ForwardedHeaders.XForwardedHost;
+    options.AllowedHosts = ["api.acme.example"];
+    // and the trusted proxies: options.KnownIPNetworks / options.KnownProxies
+});
+
+// After builder.Build(), before anything that reads the host or scheme:
+app.UseForwardedHeaders();
+
+// Endpoint handlers. OrderResponse is documented as in Model documentation in .NET; ToResponse
+// maps an order and its own URL.
+static async Task<Results<Ok<OrderResponse>, NotFound>> GetOrder(
+    Guid id, OrdersDbContext database, LinkGenerator linkGenerator, HttpContext httpContext,
+    CancellationToken cancellationToken)
+{
+    var order = await database.Orders.AsNoTracking()
+        .FirstOrDefaultAsync(candidate => candidate.Id == id, cancellationToken);
+    return order is null
+        ? TypedResults.NotFound()
+        : TypedResults.Ok(order.ToResponse(linkGenerator.GetUriByName(httpContext, "GetOrder", new { id })!));
+}
+
+static async Task<Created<OrderResponse>> PlaceOrder(PlaceOrderRequest request, /* … */)
+{
+    // … place the order …
+    var orderUrl = linkGenerator.GetUriByName(httpContext, "GetOrder", new { id = order.Id })!;
+    return TypedResults.Created(orderUrl, order.ToResponse(orderUrl));
+}
 ```
 
 ## Settings in .NET
 <!-- tags: { kind: [configuration, backend], implements: [Settings] } -->
-- Settings MUST be bound to options classes (`builder.Services.AddOptions<T>().Bind(...)`) and
-  validated with `.ValidateDataAnnotations().ValidateOnStart()`.
-- Code MUST NOT read configuration keys as strings outside `Program.cs`.
+- Groups of related settings MUST be bound to options classes
+  (`builder.Services.AddOptions<T>().Bind(...)`) and validated with
+  `.ValidateDataAnnotations().ValidateOnStart()`.
+- A single on/off switch MAY be read directly, once, with `GetValue<bool>("Section:Enabled")`, or
+  `GetValue("Section:Enabled", defaultValue: true)` when it should be on unless switched off; it
+  needs no options class.
+- Code MUST NOT read configuration keys outside `Program.cs` and the ServiceDefaults project.
 
-Why: `ValidateOnStart` is what makes a bad setting fail the deployment instead of a request.
+Why: `ValidateOnStart` is what makes a bad setting fail the deployment instead of a request. A
+switch is different: missing is a valid state, so its default must be the safe one (off for the API
+explorer, on for health endpoints), and a value that isn't a `bool` throws where it's read, at
+startup. An options class for one `bool` adds nothing.
 
 ### Example
 ```csharp
+// Program.cs
 builder.Services.AddOptions<PricingOptions>()
     .Bind(builder.Configuration.GetSection("Pricing"))
     .ValidateDataAnnotations()
     .ValidateOnStart();
+
+// Off unless switched on.
+if (app.Configuration.GetValue<bool>("OpenApi:Enabled"))
+{
+    app.MapOpenApi();
+}
 ```
 
 ## EF Core
-<!-- tags: { kind: [data-access], implements: [Migrations, Queries] } -->
+<!-- tags: { kind: [data-access], uses: [ef-core], implements: [Migrations, Queries] } -->
 - Schema changes MUST be EF Core migrations. MUST NOT use `Database.EnsureCreated()` outside tests.
 - Read-only queries MUST use `AsNoTracking()`.
 - Raw SQL MUST go through `FromSql` with interpolated parameters.

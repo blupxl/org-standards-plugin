@@ -1,0 +1,33 @@
+{
+  "fixture": "storefront",
+  "components": [
+    {
+      "name": "storefront-web",
+      "path": "web",
+      "exact": [
+        { "category": "node", "facet": "runtime", "evidence": "package.json", "where": "web/package.json", "scored": false, "why": "file pattern only: node is described as a server runtime, and this is a browser app" },
+        { "category": "frontend", "facet": "kind", "evidence": "*.tsx", "where": "web/src/main.tsx" },
+        { "category": "frontend", "facet": "kind", "evidence": "*.tsx", "where": "web/src/App.tsx" },
+        { "category": "react", "facet": "kind", "evidence": "*.tsx", "where": "web/src/main.tsx" },
+        { "category": "react", "facet": "kind", "evidence": "*.tsx", "where": "web/src/App.tsx" },
+        { "category": "sass", "facet": "kind", "evidence": "*.scss", "where": "web/src/styles/app.scss" },
+        { "category": "css", "facet": "kind", "evidence": "*.css", "where": "web/src/styles/legacy.css" }
+      ]
+    },
+    {
+      "name": "storefront-server",
+      "path": "server",
+      "exact": [
+        { "category": "node", "facet": "runtime", "evidence": "package.json", "where": "server/package.json" },
+        { "category": "postgres", "facet": "uses", "evidence": "pg", "where": "server/package.json" },
+        { "category": "postgres", "facet": "uses", "evidence": "postgres:16-alpine", "where": "server/compose.yaml" },
+        { "category": "kafka", "facet": "uses", "evidence": "kafkajs", "where": "server/package.json" },
+        { "category": "kafka", "facet": "uses", "evidence": "confluentinc/cp-kafka", "where": "server/compose.yaml" }
+      ]
+    }
+  ],
+  "distractors": [
+    { "text": "Redis", "where": "README.md", "why": "mentioned in prose only; no package, image or code" },
+    { "text": "redis:7", "where": "server/compose.yaml", "why": "inside a YAML comment; the service is not defined" }
+  ]
+}

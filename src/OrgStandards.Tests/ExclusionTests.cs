@@ -16,7 +16,7 @@ public class ExclusionTests
     {
         var resolution = Resolver.Resolve(null, Map(), 0, Design, exclude: Map(("area", ["branding"])));
 
-        Assert.Equal(["Forms"], resolution.Topics.Select(t => t.Topic.Topic));
+        Assert.Equal(["Forms"], resolution.Topics.Select(topic => topic.Topic.Topic));
         var excluded = Assert.Single(resolution.Excluded);
         Assert.Equal(("Colors", "design", "area = branding"), (excluded.Topic, excluded.Source, excluded.Reason));
     }
@@ -26,7 +26,7 @@ public class ExclusionTests
     {
         var resolution = Resolver.Resolve(null, Map(), 0, Design, exclude: Map(("topic", ["forms"])));
 
-        Assert.Equal(["Colors"], resolution.Topics.Select(t => t.Topic.Topic));
+        Assert.Equal(["Colors"], resolution.Topics.Select(topic => topic.Topic.Topic));
         Assert.Equal("topic", Assert.Single(resolution.Excluded).Reason);
     }
 

@@ -1,0 +1,5 @@
+services:
+  cache:
+    image: bitnami/redis:7
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"

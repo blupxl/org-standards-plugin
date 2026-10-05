@@ -1,0 +1,10 @@
+{
+  "name": "returns-bff",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "dependencies": {
+    "express": "^5.0.0",
+    "pg-promise": "^11.10.0"
+  }
+}
