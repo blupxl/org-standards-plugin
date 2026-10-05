@@ -1,7 +1,7 @@
 # Project fixtures
 
 Five small, invented projects (no real company or project). They are test data for measuring
-whether the classifier recognizes the taxonomy's exact evidence (REQ-FACTS B1/B2), and whether it
+whether the classifier recognizes the taxonomy's exact evidence, and whether it
 claims evidence that isn't there: packages, Aspire calls, compose images and file patterns. They are
 never built; they sit outside `src/` so no project compiles them.
 
@@ -27,8 +27,8 @@ is not `pg`).
 
 ## Scoring rules
 
-B2 runs on a copy of each fixture outside the repo, so neither `expected/` nor repo context can be
-reached.
+The measurement runs the classifier three times on a copy of each fixture outside the repository,
+so neither `expected/` nor the repository's context can be reached.
 
 - Miss: an entry with `scored` not false whose category the classifier omits for that component.
 - Unsupported exact match: the classifier cites exact evidence that isn't in the key. A category

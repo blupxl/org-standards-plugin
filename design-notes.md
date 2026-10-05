@@ -61,11 +61,14 @@ These came out of pushing back on earlier versions of the design.
 
 ```
 Claude Code
-  └─ plugin (skill + reviewer agent + MCP config)
-       └─ http://localhost:5480/mcp ── gateway (front door: list_standards, get_standards, get_topic)
+  └─ plugin (skills + agents + plan hook + MCP config)
+       └─ http://localhost:5480/mcp ── gateway (front door: list_standards, get_standards,
+                                         │        get_topic, get_taxonomy)
                                          ├─ design    MCP server ── design database
                                          │     └─ points to Acme.Web (design-system site, :5500)
-                                         └─ platform  MCP server ── platform database
+                                         ├─ platform  MCP server ── platform database (serves the taxonomy)
+                                         ├─ security  MCP server ── security database
+                                         └─ data      MCP server ── data database
 ```
 
 - **One MCP server per owner.** The same project runs once per owner, with its own database and
@@ -225,8 +228,8 @@ the document is instructions, not data: it has to say how far it can be trusted.
   `<Thing>Response` (`PlaceOrderRequest` in, `OrderResponse` out). Every example in the standards
   and recipes was renamed to match, since agents copy examples more faithfully than rules.
 - **Plans are checked before they're built, on the developer's machine.** A local hook notices a
-  finished plan (plan mode, or a Markdown file under a `plans` folder) and asks for the plan check
-  once per version of the plan; it makes no network calls. The check classifies the plan, fetches
+  finished plan (plan mode, or a Markdown file under a `plans` or `specs` folder) and asks for the
+  plan check once per version of the plan, at most three times in a row for one plan; it makes no network calls. The check classifies the plan, fetches
   only the standards its steps touch (headlines first), and proposes changes the developer approves,
   which rewrite the plan's steps in place. Only filters and topic names reach the server, which
   keeps no state, so moving it to a central host is a URL change. Classification is one skill used
@@ -237,8 +240,9 @@ the document is instructions, not data: it has to say how far it can be trusted.
   as assumed), and writes `.claude/standards.json` and a marked section of `.claude/CLAUDE.md`.
   Scopes are **per component**, because one repository can hold a .NET API and a JavaScript front
   end, and one merged scope would give each the other's rules.
-- **Implementation work is recorded the same way.** The standards skill writes
-  `docs/standards/implementations/<YYYY-MM-DD-HHmm>/` when it's done: the standards applied, the
+- **Implementation work is recorded the same way.** The standards skill writes one file,
+  `implementation.json`, in `docs/standards/implementations/<YYYY-MM-DD-HHmm>/` when it's done: the
+  standards applied, the
   **decisions it made without asking** (a guessed company name, a skipped SHOULD, a change to
   template code to meet a rule), each review round, and open questions. Committed with the change,
   the pull request carries its own standards record. Found when a one-prompt build made sensible
@@ -338,8 +342,8 @@ What's measured and not yet done, in the order we'd take it:
   records the commit and the standards it measured. The tag-only baseline is recorded so search
   can be judged against it.
 - **Broader tests.** Unit tests cover the gateway's rules (matching, overlay, inherited
-  details, validation, the document header, the Markdown parser, link resolution), and six
-  integration tests run the whole chain through the AppHost. Missing: failure-path integration
+  details, broader kinds, validation, the document header, the Markdown parser, link
+  resolution), and 13 integration tests run the whole chain through the AppHost. Missing: failure-path integration
   tests (an owner going down mid-request) and tests for the migration app's error handling.
 - **Trigger and behavior evaluation.** The skill was tested with a handful of prompts. A real
   rollout needs a repeatable set of should-trigger and shouldn't-trigger prompts, run on every
@@ -359,10 +363,7 @@ What's measured and not yet done, in the order we'd take it:
 
 - **Filtering and ownership are a larger design problem than this project tackles.** For
   example, finding and routing *missing* standards (an area with no topic under a scope) would need
-  a precise definition of which areas are "in scope", a registry of areas with owners, and per-topic
-  tags.
-- **Per-document tags.** Every topic in a file shares its tags, so a file tagged with two areas
-  answers for both. Per-topic tags would fix it.
+  a precise definition of which areas are "in scope", and a registry of areas with owners.
 - **Report wording.** "Not covered" (requested, unanswered) isn't yet separated from "not addressed
   by the standards".
 - **Complete reference tables.** The stylesheets define more tokens than the Colors topics list.

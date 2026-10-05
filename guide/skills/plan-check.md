@@ -17,7 +17,7 @@ Normally a hook starts it. You can also ask: *"check this plan against our stand
 1. **Trigger.** A small local hook (`hooks/plan_finished.py`) watches for a finished plan: plan
    mode about to end, or a Markdown file written under any folder named `plans` or `specs`. Any
    such file counts as a plan, whichever tool wrote it, because a design spec can hold the plan too
-   (as Superpowers' brainstorming sometimes does). Other tools' `specs` folders trigger it as well,
+   (as some brainstorming workflows write it). Other tools' `specs` folders trigger it as well,
    at most three pauses in a row per file. If the plan hasn't been checked, the hook pauses once
    and asks Claude to run the plan check. It makes no network calls and doesn't judge the plan. Its
    only job is a yes or no. A plan written from a spec that was already checked gets only the steps

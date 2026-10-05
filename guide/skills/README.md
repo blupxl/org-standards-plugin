@@ -1,4 +1,4 @@
-# Skills and agent
+# Skills and agents
 
 What the plugin adds to Claude Code, and the repository's own setup skill. Back to the
 [guide](../README.md) or the [main README](../../README.md).
@@ -11,7 +11,7 @@ What the plugin adds to Claude Code, and the repository's own setup skill. Back 
 | [`/acme:classify`](classify.md) | When another skill needs a scope, or when called | Classifies work into the standards' categories |
 | [`/acme:plan-check`](plan-check.md) | When a plan is finished (a hook asks), or when asked | Checks a finished plan before it's built, and rewrites the steps you approve |
 | [`acme:standards-reviewer`](standards-reviewer.md) | Handed work by the standards and assess skills, or asked for a review | Read-only agent that checks code against the standards, rule by rule |
-| `acme:classifier` | Handed work by the init, standards and assess skills | Read-only agent that runs the classify skill and returns JSON |
+| `acme:classifier` | Handed each component by the assess skill | Read-only agent that runs the classify skill and returns JSON |
 | `acme:plan-checker` | Handed a plan by the plan-check skill | Read-only agent that checks a plan against the standards and proposes changes |
 | [`/setup`](setup.md) | When you run it in this repository | Sets up, updates, renames or uninstalls the plugin on this machine |
 

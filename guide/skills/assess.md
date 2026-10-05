@@ -13,7 +13,10 @@ our standards and give me a report"*. To assess part of it: `/acme:assess src/Ap
 
 1. **Scope.** Uses the scope and exclusions in the project's `.claude/standards.json`. Without one,
    it proposes the project's components with their kinds and runtimes (a .NET API, a Node server, a
-   front end, stylesheets), and asks you to confirm them and the product.
+   front end, stylesheets), and asks you to confirm them and the product. With a declared scope,
+   the [classifier agent](../../plugins/my-company/agents/classifier.md) also checks each component
+   for **scope drift**: what the code uses that the scope doesn't list, and declared values with no
+   evidence. The review still uses the declared scope; the drift is reported.
 2. **Review.** Each component goes to the [standards reviewer](standards-reviewer.md) with its own
    filter, in parallel. Large components are sampled, and the report says how many files were
    reviewed.

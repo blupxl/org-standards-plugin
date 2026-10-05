@@ -47,10 +47,14 @@ The gateway sends **server instructions**, which Claude Code adds to every sessi
 they reach every agent, including planning and brainstorming skills from other plugins:
 
 > Company standards and approved recipes. Before planning or building in a project, read
-> `.claude/standards.json` if it exists and call `get_standards` for the components the work
-> touches. For a new project or a new capability, list the approved recipes …, prefer the one
+> `.claude/standards.json` if it exists (each component's scope, its choices, approved exclusions)
+> and call `get_standards` for the components the work touches. To work out a scope, classify the
+> work against `get_taxonomy`'s categories and signals. For a new project or a new capability (data
+> access, messaging, ...), list the approved recipes with `get_standards` and the filter
+> `{ "template": ["recipe"], "kind": [...], "runtime": [...], "uses": [...] }`, prefer the one
 > marked recommended unless the user picks another, fetch it with `get_topic`, and record the
-> choice in `.claude/standards.json`.
+> choice in `.claude/standards.json`. When a plan is finished and before implementing it, check it
+> against the standards (the plugin's plan-check skill). Never add exclusions of your own.
 
 The recorded choices live in `.claude/standards.json`, a plain file any agent or person can read.
 A plan written by any planning workflow starts from the architects' decisions instead of
@@ -82,4 +86,7 @@ Why: one line.
 - **`uses`** says which projects the recipe is for; **`adds`** says what following it adds to the
   component's `uses`. Both come from the [taxonomy](writing-standards.md#the-taxonomy).
 - Mark one option per question **recommended**. Anything not written as a recipe isn't approved.
-- Recipes in the demo: [`seed/data/recipes.md`](../src/OrgStandards.Migrations/seed/data/recipes.md).
+- Recipes in the demo: data access in
+  [`seed/data/recipes.md`](../src/OrgStandards.Migrations/seed/data/recipes.md), services and
+  caching in [`seed/platform/recipes.md`](../src/OrgStandards.Migrations/seed/platform/recipes.md),
+  and API security in [`seed/security/recipes.md`](../src/OrgStandards.Migrations/seed/security/recipes.md).

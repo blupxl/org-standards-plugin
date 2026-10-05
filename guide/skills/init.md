@@ -13,8 +13,9 @@ can check it later.
 ## What it does
 
 1. **Reads what's there.** An existing `.claude/standards.json` provides the defaults, and its
-   approved exclusions are kept. It asks the standards server which kinds, runtimes, dependencies,
-   patterns and products are valid.
+   approved exclusions are kept. It asks the standards server which products exist; the kinds,
+   runtimes, dependencies and patterns come from the taxonomy, through the
+   [classify skill](classify.md).
 2. **Scans the project:**
    - **what it does**, from the README and project names;
    - the **product**, by matching the server's products against the repository; no clear match

@@ -8,21 +8,23 @@ dotnet test src/OrgStandards.Tests --filter "Category!=Integration"  # unit test
 python -m unittest discover -s tests/hooks -v                        # the plan hook's tests
 ```
 
-- **Unit tests** (114) check the rules the gateway applies: which topics a filter selects, the
+- **Unit tests** (170) check the rules the gateway applies: which topics a filter selects, the
   product overlay and inherited details, the qualifiers (runtimes, dependencies, patterns),
-  exclusions, "did you mean" suggestions, input cleaning, the document header, the Markdown parser,
-  and link resolution. They also check the seed
-  data: every category used is in the taxonomy, every taxonomy category is used, every `implements`
-  link names a real topic, and the golden set points at standards that exist. They need nothing
+  broader kinds, exclusions, "did you mean" suggestions, input cleaning, the document header and
+  headlines, the taxonomy owner, the Markdown parser, and link resolution. They also check the seed
+  data: every category used is in the taxonomy, every taxonomy category is used, the `broader`
+  chains, every `implements` link names a real topic, and the golden set points at standards that
+  exist; and the [project fixtures](../tests/fixtures/README.md) against their answer keys. They need nothing
   running and take well under a second.
-- **Integration tests** (8) start the whole AppHost inside the test run, with Postgres in a
+- **Integration tests** (13) start the whole AppHost inside the test run, with Postgres in a
   container and randomized ports, so they don't clash with a running copy. They call the gateway
   over MCP, the way Claude Code does, and wait until every owner answers before the first test.
   They need a container runtime and are skipped, not failed, without one. The first run pulls the
   Postgres image. Run them without `--artifacts-path`: the test run starts each service from its
   own `bin/` folder.
-- **Hook tests** (28) check the plan hook with Python's `unittest`: which files and events count as
-  a finished plan, the marker line, the once-per-version rule, Windows paths and line endings, and
+- **Hook tests** (31) check the plan hook with Python's `unittest`: which files and events count as
+  a finished plan (plan mode, and Markdown under a `plans` or `specs` folder), the marker line, the
+  once-per-version rule, the limit of three pauses in a row, Windows paths and line endings, and
   that any error means silence. They need only Python.
 
 ## Measure retrieval
@@ -51,17 +53,19 @@ of them can be reproduced by checking out the commit it records and running the 
 |---|---|---|
 | Baseline: tag-only matching, one `categories` field | 6% (14% accepting "did you mean") | 9% (6%) |
 | `categories` split into `kind` and `concern` | 10% (16%) | 19% (10%) |
+| Now: 111 topics from four owners, 65 tasks, broader kinds added | 17% (40%) | 6% (5%) |
 
 Tag-only matching finds very little: a task has to name its category to be found. That's the gap
 search is meant to close, and the number to beat. Splitting the facets doubled precision: an API
-question stopped getting browser security rules.
+question stopped getting browser security rules. Adding broader kinds finds more of the expected
+topics, but returns more topics per task, so precision fell.
 
 ## Measure the classifier
 
 The [classify skill](skills/classify.md) can be scored on the same golden set:
 
 ```bash
-dotnet run --project src/OrgStandards.Evaluation -- --strategy classifier --plugin-dir ../plugins/my-company
+dotnet run --project src/OrgStandards.Evaluation -- --strategy classifier --plugin-dir ./plugins/my-company
 ```
 
 Unlike the default strategies, this one needs the services running, because the classifier calls

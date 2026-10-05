@@ -40,8 +40,8 @@ Who this helps, and how: [use-cases.md](use-cases.md).
   comparison.
 - **Context kept small.** A few hundred tokens per session until a skill is used; details are
   fetched only when a task needs them.
-- **Built, tested and corrected.** 122 unit and integration tests and 28 hook tests, and the failures found along the
-  way, with how each was fixed.
+- **Built, tested and corrected.** 170 unit tests, 13 integration tests and 31 hook tests, and the
+  failures found along the way, with how each was fixed.
 - **Fully local, and debuggable.** One clone, one command (`/setup`), nothing hosted; run it from
   your IDE and step through a real request.
 
@@ -79,12 +79,12 @@ Everything below is also indexed in [guide/](guide/README.md).
 | [Getting started](guide/getting-started.md) | Requirements, running the services (and debugging them), trying it, troubleshooting |
 | [Install the plugin](guide/install.md) | The local catalog, installing for all projects or one, update, rename, uninstall |
 | [Set up a project](guide/project-setup.md) | `.claude/standards.json`: a project's scope and approved exclusions |
-| [How it works](guide/how-it-works.md) | The architecture, the three MCP tools, the document Claude reads, filters and fields |
+| [How it works](guide/how-it-works.md) | The architecture, the four MCP tools, the document Claude reads, filters and fields |
 | [Write standards](guide/writing-standards.md) | The Markdown format, the taxonomy, runtimes, adding an owner |
 | [Templates and recipes](guide/templates.md) | Approved ways to start new work (data access with EF Core or Dapper, …), and how every agent sees the decisions |
 | [Testing and evaluation](guide/testing-and-evaluation.md) | The tests, the golden set, retrieval results |
 
-**Skills and agent** ([all](guide/skills/README.md)):
+**Skills and agents** ([all](guide/skills/README.md)):
 
 | | |
 |---|---|

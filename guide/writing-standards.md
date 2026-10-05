@@ -111,8 +111,8 @@ narrower concern carries its parents.
 
 Standards about a technology (`uses: postgres`) or an architecture (`pattern: event-sourcing`)
 reach only components that name it, like runtimes. They layer: an event-sourced .NET component on
-Eventuous gets the general rules, the event-sourcing rules, and the Eventuous rules, and the
-Eventuous topics `implements` the event-sourcing ones they say how to meet. The demo's dependency
+Eventuous gets the general rules, the event-sourcing rules, and the Eventuous rules. Each Eventuous
+topic names the event-sourcing topic it says how to meet in `implements`. The demo's dependency
 standards belong to the **data** owner; the pattern standards to **platform**.
 
 ## Recipes
@@ -126,4 +126,4 @@ examples. They're documents marked `template: recipe`; see [Templates and recipe
 2. Add a folder `src/OrgStandards.Migrations/seed/<name>/` with its Markdown documents.
 
 Aspire gives it a database and a server, pgweb gets a bookmark for it, and the gateway starts
-fanning out to it. No change to the gateway, the skills, or the agent.
+fanning out to it. No change to the gateway, the skills, or the agents.

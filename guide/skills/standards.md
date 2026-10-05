@@ -16,10 +16,13 @@ service, UI code, a page, form, mockup or prototype, or asking which standards a
 
 ## What it does
 
-1. **Works out the scope.** Starts from the project's `.claude/standards.json`. Otherwise it decides
-   the `product` (and asks if that isn't clear), the `kind` of work, the `runtime` from the files
-   (`*.csproj` means `dotnet`, `package.json` with server code means `node`), and leaves `concern`
-   out so every concern applies. It uses only fields and values `list_standards` returns.
+1. **Works out the scope.** Starts from the project's `.claude/standards.json`. When the task may
+   add something the file doesn't list (a new dependency, runtime or pattern), it follows the
+   [classify skill](classify.md) and compares. Without the file, it suggests running
+   [`/acme:init`](init.md), then classifies the task: the `kind` of work, the `runtime` from the
+   files (`*.csproj` means `dotnet`, `package.json` with server code means `node`) and what it
+   `uses`, each with its evidence. It asks for the `product` if that isn't clear, and leaves
+   `concern` out so every concern applies. It uses only fields and values `list_standards` returns.
 2. **Starts new work from a recipe.** When the task starts a project or adds a capability (data
    access, messaging, …), it asks what the work needs, lists the architects' approved
    [recipes](../templates.md) with the recommended one first (as headlines: names, owners, what

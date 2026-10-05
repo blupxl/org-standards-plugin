@@ -90,7 +90,7 @@ With the AppHost running, from the repository root:
 claude --plugin-dir ./plugins/my-company
 ```
 
-This loads the plugin (skills, agent, and MCP tools) for that session only. Nothing is installed or
+This loads the plugin (skills, agents, the plan hook and the MCP tools) for that session only. Nothing is installed or
 saved, so there's nothing to undo. Loaded this way the plugin is named after its folder,
 `my-company`. To use it in your other projects, [install it](install.md).
 
@@ -100,7 +100,8 @@ Things to ask:
 - *"I'm building a web API for xyz-public-app. Which standards apply?"*
 - *"Which colors should I use for a new settings page?"*
 - *"Start a new orders API with data access on PostgreSQL."* (Claude offers the approved recipes.)
-- In another repository: *"Assess this project against our standards"* (or `/acme:assess`).
+- In another repository, with the plugin [installed](install.md): *"Assess this project against
+  our standards"* (or `/acme:assess`).
 
 ## Troubleshooting
 
