@@ -275,9 +275,10 @@ public class ProjectFixtureTests
 
     private static string KeysFolder() => Path.Combine(Directory.GetParent(FixturesFolder())!.FullName, "expected");
 
-    // The fixtures sit in the repo, not in the build output. Walk up from the test's folder to
-    // org-standards; if the build output is somewhere else entirely (--artifacts-path), walk up
-    // from this source file instead.
+    // The fixtures sit in the repo, not in the build output. Walk up from the test's folder to the
+    // first folder holding tests/fixtures/projects: org-standards/ here, the repository root once
+    // published. If the build output is somewhere else entirely (--artifacts-path), walk up from
+    // this source file instead.
     private static string FixturesFolder([CallerFilePath] string sourceFile = "")
     {
         foreach (var start in new[] { AppContext.BaseDirectory, Path.GetDirectoryName(sourceFile)! })
@@ -285,9 +286,9 @@ public class ProjectFixtureTests
             for (var folder = new DirectoryInfo(start); folder is not null; folder = folder.Parent)
             {
                 var candidate = Path.Combine(folder.FullName, "tests", "fixtures", "projects");
-                if (folder.Name == "org-standards" && Directory.Exists(candidate)) return candidate;
+                if (Directory.Exists(candidate)) return candidate;
             }
         }
-        throw new DirectoryNotFoundException("Couldn't find org-standards/tests/fixtures/projects above the test folder.");
+        throw new DirectoryNotFoundException("Couldn't find tests/fixtures/projects above the test folder.");
     }
 }
